@@ -29,3 +29,4 @@ export { default as NoticeBar } from './src/DataDisplay/NoticeBar';
 export { default as Steps } from './src/DataDisplay/Steps';
 export { default as Tag } from './src/DataDisplay/Tag';
 export { default as List, ListItem } from './src/DataDisplay/List';
+export { default as Modal } from './src/Feedback/Modal';
