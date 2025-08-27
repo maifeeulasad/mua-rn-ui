@@ -5,6 +5,7 @@ import {
   StyleSheet,
   ViewStyle,
 } from 'react-native';
+import { useTheme, useColors } from '../themes';
 
 export interface FormFieldRule {
   required?: boolean;
@@ -60,6 +61,9 @@ const Form: React.FC<FormProps> = ({
   scrollable = true,
   children,
 }) => {
+  const theme = useTheme();
+  const colors = useColors();
+  
   const [fields, setFields] = useState<{ [key: string]: FormField }>(() => {
     const initialFields: { [key: string]: FormField } = {};
     Object.keys(initialValues).forEach(key => {
@@ -205,19 +209,20 @@ const Form: React.FC<FormProps> = ({
 
   const Container = scrollable ? ScrollView : View;
 
+  // Theme-aware styles
+  const containerStyle: ViewStyle = {
+    padding: theme.spacing.md,
+    backgroundColor: colors.background,
+    ...style,
+  };
+
   return (
     <FormContext.Provider value={contextValue}>
-      <Container style={[styles.container, style]}>
+      <Container style={containerStyle}>
         {children}
       </Container>
     </FormContext.Provider>
   );
 };
-
-const styles = StyleSheet.create({
-  container: {
-    padding: 16,
-  },
-});
 
 export default Form;
