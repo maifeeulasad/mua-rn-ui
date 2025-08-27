@@ -1,5 +1,6 @@
 import React from 'react';
 import { View as RNView, ViewProps, ViewStyle } from 'react-native';
+import { useTheme, useColors } from '../themes';
 
 interface CustomViewProps extends ViewProps {
   padding?: number;
@@ -20,20 +21,25 @@ const View: React.FC<CustomViewProps> = ({
   children,
   ...props
 }) => {
+  const theme = useTheme();
+  const colors = useColors();
+
   const viewStyle: ViewStyle = {
     ...(padding !== undefined && { padding }),
     ...(margin !== undefined && { margin }),
     ...(backgroundColor && { backgroundColor }),
     ...(borderRadius !== undefined && { borderRadius }),
     ...(shadow && {
-      shadowColor: '#000',
-      shadowOffset: {
-        width: 0,
-        height: 2,
-      },
-      shadowOpacity: 0.25,
-      shadowRadius: 3.84,
-      elevation: 5,
+      shadowColor: colors?.shadow || '#000',
+      ...(theme?.shadows?.md || {
+        shadowOffset: {
+          width: 0,
+          height: 2,
+        },
+        shadowOpacity: 0.25,
+        shadowRadius: 3.84,
+        elevation: 5,
+      }),
     }),
   };
 
