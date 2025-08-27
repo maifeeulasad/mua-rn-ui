@@ -16,7 +16,13 @@
     "flex",
     "layout",
     "view",
-    "spacing"
+    "spacing",
+    "navigation",
+    "drawer",
+    "tooltip",
+    "pagination",
+    "tabs",
+    "tabbar"
   ],
   "author": "Maifee Ul Asad<maifeeulasad@gmail.com>",
   "license": "MIT",
