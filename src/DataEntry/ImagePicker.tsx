@@ -10,6 +10,7 @@ import {
   TextStyle,
   ImageStyle,
 } from 'react-native';
+import { useTheme, useColors } from '../themes';
 
 export interface ImagePickerOptions {
   mediaType?: 'photo' | 'video' | 'mixed';
@@ -57,6 +58,9 @@ const ImagePicker: React.FC<ImagePickerProps> = ({
   multiple = false,
   children,
 }) => {
+  const theme = useTheme();
+  const colors = useColors();
+  
   const [selectedImages, setSelectedImages] = useState<string[]>([]);
   const [isLoading, setIsLoading] = useState(false);
 
@@ -164,19 +168,19 @@ const ImagePicker: React.FC<ImagePickerProps> = ({
     if (!showPreview || selectedImages.length === 0) return null;
 
     return (
-      <View style={styles.previewContainer}>
+      <View style={previewContainerStyle}>
         {selectedImages.map((uri, index) => (
-          <View key={index} style={styles.imageContainer}>
+          <View key={index} style={imageContainerStyle}>
             <Image
               source={{ uri }}
-              style={[styles.previewImage, previewStyle]}
+              style={[previewImageStyle, previewStyle]}
               resizeMode="cover"
             />
             <TouchableOpacity
-              style={styles.removeButton}
+              style={removeButtonStyle}
               onPress={() => removeImage(index)}
             >
-              <Text style={styles.removeButtonText}>×</Text>
+              <Text style={removeButtonTextStyle}>×</Text>
             </TouchableOpacity>
           </View>
         ))}
@@ -184,9 +188,70 @@ const ImagePicker: React.FC<ImagePickerProps> = ({
     );
   };
 
+  // Theme-aware styles
+  const containerStyleThemed: ViewStyle = {
+    marginBottom: theme.spacing.md,
+    ...containerStyle,
+  };
+
+  const buttonStyleThemed: ViewStyle = {
+    backgroundColor: colors.primary,
+    paddingVertical: theme.spacing.sm,
+    paddingHorizontal: theme.spacing.lg,
+    borderRadius: theme.borderRadius.md,
+    alignItems: 'center',
+    justifyContent: 'center',
+    minHeight: 48,
+    opacity: disabled ? 0.6 : 1,
+    ...buttonStyle,
+  };
+
+  const buttonTextStyle: TextStyle = {
+    color: colors.buttonText,
+    fontSize: theme.typography.fontSize.md,
+    fontWeight: theme.typography.fontWeight.semibold,
+    ...textStyle,
+  };
+
+  const previewContainerStyle: ViewStyle = {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    marginTop: theme.spacing.sm,
+  };
+
+  const imageContainerStyle: ViewStyle = {
+    position: 'relative',
+    marginRight: theme.spacing.xs,
+    marginBottom: theme.spacing.xs,
+  };
+
+  const previewImageStyle: ImageStyle = {
+    width: 80,
+    height: 80,
+    borderRadius: theme.borderRadius.md,
+  };
+
+  const removeButtonStyle: ViewStyle = {
+    position: 'absolute',
+    top: -theme.spacing.xs,
+    right: -theme.spacing.xs,
+    backgroundColor: colors.error,
+    width: 24,
+    height: 24,
+    borderRadius: 12,
+    alignItems: 'center',
+    justifyContent: 'center',
+  };
+
+  const removeButtonTextStyle: TextStyle = {
+    color: '#fff',
+    fontSize: 16,
+    fontWeight: 'bold',
+  };
+
   if (children) {
     return (
-      <View style={[containerStyle]}>
+      <View style={containerStyleThemed}>
         <TouchableOpacity onPress={showImagePicker} disabled={disabled}>
           {children}
         </TouchableOpacity>
@@ -196,17 +261,13 @@ const ImagePicker: React.FC<ImagePickerProps> = ({
   }
 
   return (
-    <View style={[styles.container, containerStyle]}>
+    <View style={containerStyleThemed}>
       <TouchableOpacity
-        style={[
-          styles.button,
-          { opacity: disabled ? 0.6 : 1 },
-          buttonStyle,
-        ]}
+        style={buttonStyleThemed}
         onPress={showImagePicker}
         disabled={disabled || isLoading}
       >
-        <Text style={[styles.buttonText, textStyle]}>
+        <Text style={buttonTextStyle}>
           {isLoading ? 'Loading...' : placeholder}
         </Text>
       </TouchableOpacity>
@@ -214,56 +275,5 @@ const ImagePicker: React.FC<ImagePickerProps> = ({
     </View>
   );
 };
-
-const styles = StyleSheet.create({
-  container: {
-    marginBottom: 16,
-  },
-  button: {
-    backgroundColor: '#007AFF',
-    paddingVertical: 12,
-    paddingHorizontal: 24,
-    borderRadius: 8,
-    alignItems: 'center',
-    justifyContent: 'center',
-    minHeight: 48,
-  },
-  buttonText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: '600',
-  },
-  previewContainer: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    marginTop: 12,
-  },
-  imageContainer: {
-    position: 'relative',
-    marginRight: 8,
-    marginBottom: 8,
-  },
-  previewImage: {
-    width: 80,
-    height: 80,
-    borderRadius: 8,
-  },
-  removeButton: {
-    position: 'absolute',
-    top: -8,
-    right: -8,
-    backgroundColor: '#FF3B30',
-    width: 24,
-    height: 24,
-    borderRadius: 12,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  removeButtonText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: 'bold',
-  },
-});
 
 export default ImagePicker;
