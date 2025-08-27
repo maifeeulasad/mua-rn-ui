@@ -4,9 +4,9 @@ import {
   Text, 
   TouchableOpacity, 
   ViewStyle, 
-  TextStyle,
-  StyleSheet 
+  TextStyle
 } from 'react-native';
+import { useTheme, useColors } from '../themes';
 
 export interface TagProps {
   children?: React.ReactNode;
@@ -37,6 +37,8 @@ const Tag: React.FC<TagProps> = ({
   textStyle,
   testID,
 }) => {
+  const theme = useTheme();
+  const colors = useColors();
   const [visible, setVisible] = useState(true);
 
   const handleClose = () => {
@@ -50,14 +52,46 @@ const Tag: React.FC<TagProps> = ({
 
   const getColorStyles = () => {
     const presetColors: { [key: string]: { bg: string; text: string; border: string } } = {
-      blue: { bg: '#e6f7ff', text: '#1890ff', border: '#91d5ff' },
-      green: { bg: '#f6ffed', text: '#52c41a', border: '#b7eb8f' },
-      red: { bg: '#fff2f0', text: '#ff4d4f', border: '#ffccc7' },
-      orange: { bg: '#fff7e6', text: '#fa8c16', border: '#ffd591' },
-      yellow: { bg: '#feffe6', text: '#fadb14', border: '#fffb8f' },
-      purple: { bg: '#f9f0ff', text: '#722ed1', border: '#d3adf7' },
-      cyan: { bg: '#e6fffb', text: '#13c2c2', border: '#87e8de' },
-      gray: { bg: '#f5f5f5', text: '#666666', border: '#d9d9d9' },
+      blue: { 
+        bg: colors.primary + '1A', // 10% opacity
+        text: colors.primary, 
+        border: colors.primary + '4D' // 30% opacity
+      },
+      green: { 
+        bg: colors.success + '1A', 
+        text: colors.success, 
+        border: colors.success + '4D' 
+      },
+      red: { 
+        bg: colors.error + '1A', 
+        text: colors.error, 
+        border: colors.error + '4D' 
+      },
+      orange: { 
+        bg: colors.warning + '1A', 
+        text: colors.warning, 
+        border: colors.warning + '4D' 
+      },
+      yellow: { 
+        bg: colors.warning + '1A', 
+        text: colors.warning, 
+        border: colors.warning + '4D' 
+      },
+      purple: { 
+        bg: colors.secondary + '1A', 
+        text: colors.secondary, 
+        border: colors.secondary + '4D' 
+      },
+      cyan: { 
+        bg: colors.info + '1A', 
+        text: colors.info, 
+        border: colors.info + '4D' 
+      },
+      gray: { 
+        bg: colors.surface, 
+        text: colors.textSecondary, 
+        border: colors.border 
+      },
     };
 
     if (color && presetColors[color]) {
@@ -67,42 +101,61 @@ const Tag: React.FC<TagProps> = ({
     if (color) {
       // Custom color
       return {
-        bg: color + '20', // Add transparency
+        bg: color + '1A', // Add transparency
         text: color,
-        border: color + '60',
+        border: color + '4D',
       };
     }
 
     // Default colors
     if (selected) {
-      return { bg: '#1890ff', text: '#ffffff', border: '#1890ff' };
+      return { 
+        bg: colors.primary, 
+        text: colors.background, // Use background color as contrasting text
+        border: colors.primary 
+      };
     }
 
-    return { bg: '#fafafa', text: '#666666', border: '#d9d9d9' };
+    return { 
+      bg: colors.surface, 
+      text: colors.text, 
+      border: colors.border 
+    };
   };
 
   const colorStyles = getColorStyles();
 
-  const containerStyles: ViewStyle[] = [
-    styles.container,
-    ...(small ? [styles.smallContainer] : []),
-    {
-      backgroundColor: colorStyles.bg,
-      borderColor: colorStyles.border,
-    },
-    ...(selected ? [styles.selected] : []),
-    ...(disabled ? [styles.disabled] : []),
-    ...(style ? [style] : []),
-  ];
+  const getContainerStyle = (isSmall: boolean): ViewStyle => ({
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: isSmall ? theme.spacing.xs : theme.spacing.sm,
+    paddingVertical: isSmall ? theme.spacing.xs / 2 : theme.spacing.xs,
+    borderRadius: theme.borderRadius.sm,
+    borderWidth: 1,
+    alignSelf: 'flex-start',
+    backgroundColor: colorStyles.bg,
+    borderColor: colorStyles.border,
+    opacity: disabled ? 0.5 : 1,
+  });
 
-  const tagTextStyles: TextStyle[] = [
-    styles.text,
-    ...(small ? [styles.smallText] : []),
-    {
-      color: colorStyles.text,
-    },
-    ...(textStyle ? [textStyle] : []),
-  ];
+  const getTextStyle = (isSmall: boolean): TextStyle => ({
+    fontSize: isSmall ? theme.typography.fontSize.xs : theme.typography.fontSize.sm,
+    fontWeight: theme.typography.fontWeight.normal,
+    lineHeight: isSmall ? theme.typography.lineHeight.xs : theme.typography.lineHeight.sm,
+    color: colorStyles.text,
+  });
+
+  const getCloseButtonStyle = (): ViewStyle => ({
+    marginLeft: theme.spacing.xs,
+    padding: theme.spacing.xs / 2,
+  });
+
+  const getCloseIconStyle = (): TextStyle => ({
+    fontSize: 10,
+    fontWeight: 'bold',
+    lineHeight: 12,
+    color: colorStyles.text,
+  });
 
   if (!visible) {
     return null;
@@ -114,17 +167,27 @@ const Tag: React.FC<TagProps> = ({
     return (
       <TouchableOpacity
         onPress={handleClose}
-        style={styles.closeButton}
+        style={getCloseButtonStyle()}
         hitSlop={{ top: 4, bottom: 4, left: 4, right: 4 }}
       >
-        <Text style={[styles.closeIcon, { color: colorStyles.text }]}>✕</Text>
+        <Text style={getCloseIconStyle()}>✕</Text>
       </TouchableOpacity>
     );
   };
 
+  const containerStyle = [
+    getContainerStyle(small),
+    style,
+  ];
+
+  const textStyles = [
+    getTextStyle(small),
+    textStyle,
+  ];
+
   const content = (
-    <View style={containerStyles} testID={testID}>
-      <Text style={tagTextStyles}>{children}</Text>
+    <View style={containerStyle} testID={testID}>
+      <Text style={textStyles}>{children}</Text>
       {renderCloseIcon()}
     </View>
   );
@@ -176,46 +239,5 @@ export const CyanTag: React.FC<Omit<TagProps, 'color'>> = (props) => (
 export const GrayTag: React.FC<Omit<TagProps, 'color'>> = (props) => (
   <Tag {...props} color="gray" />
 );
-
-const styles = StyleSheet.create({
-  container: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 4,
-    borderWidth: 1,
-    alignSelf: 'flex-start',
-  },
-  smallContainer: {
-    paddingHorizontal: 6,
-    paddingVertical: 2,
-    borderRadius: 3,
-  },
-  selected: {
-    // Selected styles are handled by color logic
-  },
-  disabled: {
-    opacity: 0.5,
-  },
-  text: {
-    fontSize: 12,
-    fontWeight: '400',
-    lineHeight: 16,
-  },
-  smallText: {
-    fontSize: 11,
-    lineHeight: 14,
-  },
-  closeButton: {
-    marginLeft: 6,
-    padding: 2,
-  },
-  closeIcon: {
-    fontSize: 10,
-    fontWeight: 'bold',
-    lineHeight: 12,
-  },
-});
 
 export default Tag;
