@@ -8,6 +8,7 @@ import {
   NativeScrollEvent,
   StyleSheet 
 } from 'react-native';
+import { useTheme, useColors } from '../themes';
 
 export interface CarouselProps {
   children: React.ReactNode[];
@@ -44,10 +45,92 @@ const Carousel: React.FC<CarouselProps> = ({
   showsIndicators = false,
   testID,
 }) => {
+  const theme = useTheme();
+  const colors = useColors();
+  
   const scrollViewRef = useRef<ScrollView>(null);
   const [currentIndex, setCurrentIndex] = useState(selectedIndex);
   const [isScrolling, setIsScrolling] = useState(false);
   const autoplayTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // Theme-aware styles
+  const containerStyleThemed: ViewStyle = {
+    flex: 1,
+  };
+
+  const verticalContainerStyleThemed: ViewStyle = {
+    height: screenHeight,
+  };
+
+  const scrollViewStyleThemed: ViewStyle = {
+    flex: 1,
+  };
+
+  const horizontalContentStyleThemed: ViewStyle = {
+    flexDirection: 'row',
+  };
+
+  const verticalContentStyleThemed: ViewStyle = {
+    flexDirection: 'column',
+  };
+
+  const itemStyleThemed: ViewStyle = {
+    justifyContent: 'center',
+    alignItems: 'center',
+  };
+
+  const horizontalItemStyleThemed: ViewStyle = {
+    width: screenWidth,
+  };
+
+  const verticalItemStyleThemed: ViewStyle = {
+    height: screenHeight,
+  };
+
+  const dotsContainerStyleThemed: ViewStyle = {
+    flexDirection: 'row',
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingVertical: theme.spacing.xs,
+    paddingHorizontal: theme.spacing.md,
+  };
+
+  const dotsTopStyleThemed: ViewStyle = {
+    position: 'absolute',
+    top: 20,
+    left: 0,
+    right: 0,
+    zIndex: 1,
+  };
+
+  const dotsBottomStyleThemed: ViewStyle = {
+    position: 'absolute',
+    bottom: 20,
+    left: 0,
+    right: 0,
+    zIndex: 1,
+  };
+
+  const dotsVerticalStyleThemed: ViewStyle = {
+    flexDirection: 'column',
+    left: 20,
+    right: 'auto',
+    top: '50%',
+    transform: [{ translateY: -50 }],
+  };
+
+  const dotStyleThemed: ViewStyle = {
+    width: 8,
+    height: 8,
+    borderRadius: 4,
+    backgroundColor: colors.overlay || 'rgba(255, 255, 255, 0.5)',
+    marginHorizontal: theme.spacing.xs / 2,
+  };
+
+  const activeDotStyleThemed: ViewStyle = {
+    backgroundColor: colors.primary || '#ffffff',
+    transform: [{ scale: 1.2 }],
+  };
 
   const itemCount = children.length;
   const screenSize = vertical ? screenHeight : screenWidth;
@@ -125,17 +208,17 @@ const Carousel: React.FC<CarouselProps> = ({
 
     return (
       <View style={[
-        styles.dotsContainer,
-        dotPosition === 'top' ? styles.dotsTop : styles.dotsBottom,
-        vertical && styles.dotsVertical
+        dotsContainerStyleThemed,
+        dotPosition === 'top' ? dotsTopStyleThemed : dotsBottomStyleThemed,
+        vertical && dotsVerticalStyleThemed
       ]}>
         {children.map((_, index) => (
           <View
             key={index}
             style={[
-              styles.dot,
+              dotStyleThemed,
               dotStyle,
-              index === currentIndex && [styles.activeDot, activeDotStyle]
+              index === currentIndex && [activeDotStyleThemed, activeDotStyle]
             ]}
           />
         ))}
@@ -144,8 +227,8 @@ const Carousel: React.FC<CarouselProps> = ({
   };
 
   const containerStyle = [
-    styles.container,
-    vertical && styles.verticalContainer,
+    containerStyleThemed,
+    vertical && verticalContainerStyleThemed,
     style,
   ];
 
@@ -161,15 +244,15 @@ const Carousel: React.FC<CarouselProps> = ({
         showsVerticalScrollIndicator={showsIndicators && vertical}
         onMomentumScrollEnd={handleScrollEnd}
         onScrollBeginDrag={handleScrollBegin}
-        style={styles.scrollView}
-        contentContainerStyle={vertical ? styles.verticalContent : styles.horizontalContent}
+        style={scrollViewStyleThemed}
+        contentContainerStyle={vertical ? verticalContentStyleThemed : horizontalContentStyleThemed}
       >
         {children.map((child, index) => (
           <View
             key={index}
             style={[
-              styles.item,
-              vertical ? styles.verticalItem : styles.horizontalItem
+              itemStyleThemed,
+              vertical ? verticalItemStyleThemed : horizontalItemStyleThemed
             ]}
           >
             {child}
@@ -181,72 +264,5 @@ const Carousel: React.FC<CarouselProps> = ({
     </View>
   );
 };
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-  },
-  verticalContainer: {
-    height: screenHeight,
-  },
-  scrollView: {
-    flex: 1,
-  },
-  horizontalContent: {
-    flexDirection: 'row',
-  },
-  verticalContent: {
-    flexDirection: 'column',
-  },
-  item: {
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  horizontalItem: {
-    width: screenWidth,
-  },
-  verticalItem: {
-    height: screenHeight,
-  },
-  dotsContainer: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-    alignItems: 'center',
-    paddingVertical: 8,
-    paddingHorizontal: 16,
-  },
-  dotsTop: {
-    position: 'absolute',
-    top: 20,
-    left: 0,
-    right: 0,
-    zIndex: 1,
-  },
-  dotsBottom: {
-    position: 'absolute',
-    bottom: 20,
-    left: 0,
-    right: 0,
-    zIndex: 1,
-  },
-  dotsVertical: {
-    flexDirection: 'column',
-    left: 20,
-    right: 'auto',
-    top: '50%',
-    transform: [{ translateY: -50 }],
-  },
-  dot: {
-    width: 8,
-    height: 8,
-    borderRadius: 4,
-    backgroundColor: 'rgba(255, 255, 255, 0.5)',
-    marginHorizontal: 4,
-  },
-  activeDot: {
-    backgroundColor: '#ffffff',
-    transform: [{ scale: 1.2 }],
-  },
-});
 
 export default Carousel;
