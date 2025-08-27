@@ -12,3 +12,4 @@ export { default as Checkbox } from './src/DataEntry/Checkbox';
 export { default as DatePickerView } from './src/DataEntry/DatePickerView';
 export { default as DatePicker } from './src/DataEntry/DatePicker';
 export { default as Form, useForm } from './src/DataEntry/Form';
+export { default as Input } from './src/DataEntry/Input';
