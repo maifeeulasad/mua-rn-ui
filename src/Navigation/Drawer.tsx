@@ -9,6 +9,7 @@ import {
   ViewStyle,
   ModalProps,
 } from 'react-native';
+import { useColors } from '../themes';
 
 type DrawerPosition = 'left' | 'right';
 
@@ -30,12 +31,13 @@ const Drawer: React.FC<DrawerProps> = ({
   onClose,
   position = 'left',
   width = screenWidth * 0.8,
-  overlayColor = 'rgba(0, 0, 0, 0.5)',
+  overlayColor,
   drawerStyle,
   overlayStyle,
   children,
   ...modalProps
 }) => {
+  const colors = useColors();
   const translateX = useRef(new Animated.Value(position === 'left' ? -width : width)).current;
   const overlayOpacity = useRef(new Animated.Value(0)).current;
 
@@ -74,7 +76,7 @@ const Drawer: React.FC<DrawerProps> = ({
     top: 0,
     bottom: 0,
     width,
-    backgroundColor: '#fff',
+    backgroundColor: colors?.surface || '#fff',
     ...(position === 'left' ? { left: 0 } : { right: 0 }),
     ...drawerStyle,
   };
@@ -91,7 +93,7 @@ const Drawer: React.FC<DrawerProps> = ({
           style={[
             {
               ...StyleSheet.absoluteFillObject,
-              backgroundColor: overlayColor,
+              backgroundColor: overlayColor || colors?.overlay || 'rgba(0, 0, 0, 0.5)',
               opacity: overlayOpacity,
             },
             overlayStyle,
