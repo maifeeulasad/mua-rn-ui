@@ -1,5 +1,6 @@
 import React from 'react';
 import { View, ViewProps, ViewStyle } from 'react-native';
+import { useTheme } from '../themes';
 
 type WhiteSpaceSize = 'xs' | 'sm' | 'md' | 'lg' | 'xl' | number;
 
@@ -13,24 +14,29 @@ const WhiteSpace: React.FC<WhiteSpaceProps> = ({
   style,
   ...props
 }) => {
+  const theme = useTheme();
+
   const getSizeValue = (size: WhiteSpaceSize): number => {
     if (typeof size === 'number') {
       return size;
     }
     
+    // Use theme spacing if available, fallback to hardcoded values
+    const spacing = theme?.spacing;
+    
     switch (size) {
       case 'xs':
-        return 4;
+        return spacing?.xs || 4;
       case 'sm':
-        return 8;
+        return spacing?.sm || 8;
       case 'md':
-        return 16;
+        return spacing?.md || 16;
       case 'lg':
-        return 24;
+        return spacing?.lg || 24;
       case 'xl':
-        return 32;
+        return spacing?.xl || 32;
       default:
-        return 16;
+        return spacing?.md || 16;
     }
   };
 
