@@ -14,7 +14,9 @@
     "component",
     "button",
     "flex",
-    "layout"
+    "layout",
+    "view",
+    "spacing"
   ],
   "author": "Maifee Ul Asad<maifeeulasad@gmail.com>",
   "license": "MIT",
