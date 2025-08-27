@@ -22,3 +22,4 @@ export { default as Slider } from './src/DataEntry/Slider';
 export { default as SearchBar } from './src/DataEntry/SearchBar';
 export { default as Badge } from './src/DataDisplay/Badge';
 export { default as Card } from './src/DataDisplay/Card';
+export { default as Carousel } from './src/DataDisplay/Carousel';
