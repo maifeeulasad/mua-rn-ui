@@ -9,8 +9,8 @@ import {
   Dimensions,
   ViewStyle, 
   TextStyle,
-  StyleSheet 
 } from 'react-native';
+import { useTheme, useColors } from '../themes';
 
 export interface ModalProps {
   visible: boolean;
@@ -57,6 +57,9 @@ const Modal: React.FC<ModalProps> = ({
   maskStyle,
   testID,
 }) => {
+  const theme = useTheme();
+  const colors = useColors();
+  
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const slideAnim = useRef(new Animated.Value(screenHeight)).current;
 
@@ -110,23 +113,148 @@ const Modal: React.FC<ModalProps> = ({
     onClose?.();
   };
 
+  // Define styles using theme values
+  const containerStyle: ViewStyle = {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  };
+
+  const themeAwareMaskStyle: ViewStyle = {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    backgroundColor: colors?.overlay || 'rgba(0, 0, 0, 0.5)',
+  };
+
+  const maskTouchableStyle: ViewStyle = {
+    flex: 1,
+  };
+
+  const centerModalStyle: ViewStyle = {
+    justifyContent: 'center',
+    alignItems: 'center',
+    zIndex: 1,
+  };
+
+  const popupModalStyle: ViewStyle = {
+    position: 'absolute',
+    bottom: 0,
+    left: 0,
+    right: 0,
+    zIndex: 1,
+  };
+
+  const modalStyle: ViewStyle = {
+    backgroundColor: colors?.surface || '#ffffff',
+    borderRadius: theme?.borderRadius?.md || 8,
+    maxWidth: screenWidth - 32,
+    maxHeight: screenHeight - 100,
+    overflow: 'hidden',
+    ...(theme?.shadows?.lg || {
+      elevation: 5,
+      shadowColor: colors?.shadow || '#000',
+      shadowOffset: {
+        width: 0,
+        height: 2,
+      },
+      shadowOpacity: 0.25,
+      shadowRadius: 3.84,
+    }),
+  };
+
+  const headerStyle: ViewStyle = {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: theme?.spacing?.md || 16,
+    paddingVertical: theme?.spacing?.md || 12,
+    borderBottomWidth: 1,
+    borderBottomColor: colors?.border || '#e8e8e8',
+  };
+
+  const themeAwareTitleStyle: TextStyle = {
+    fontSize: theme?.typography?.fontSize?.md || 16,
+    fontWeight: theme?.typography?.fontWeight?.semibold || '600',
+    color: colors?.text || '#333333',
+    flex: 1,
+  };
+
+  const closeButtonStyle: ViewStyle = {
+    marginLeft: theme?.spacing?.md || 12,
+    padding: theme?.spacing?.xs || 4,
+  };
+
+  const closeIconStyle: TextStyle = {
+    fontSize: theme?.typography?.fontSize?.md || 16,
+    color: colors?.textSecondary || '#666666',
+    fontWeight: theme?.typography?.fontWeight?.bold || 'bold',
+  };
+
+  const contentStyle: ViewStyle = {
+    padding: theme?.spacing?.md || 16,
+    maxHeight: screenHeight - 200,
+  };
+
+  const footerStyle: ViewStyle = {
+    flexDirection: 'row',
+    justifyContent: 'flex-end',
+    alignItems: 'center',
+    paddingHorizontal: theme?.spacing?.md || 16,
+    paddingVertical: theme?.spacing?.md || 12,
+    borderTopWidth: 1,
+    borderTopColor: colors?.border || '#e8e8e8',
+  };
+
+  const buttonStyle: ViewStyle = {
+    paddingHorizontal: theme?.spacing?.md || 16,
+    paddingVertical: theme?.spacing?.sm || 8,
+    borderRadius: theme?.borderRadius?.sm || 4,
+    marginLeft: theme?.spacing?.sm || 8,
+    minWidth: 64,
+    alignItems: 'center',
+  };
+
+  const cancelButtonStyle: ViewStyle = {
+    backgroundColor: colors?.surface || '#f5f5f5',
+    borderWidth: 1,
+    borderColor: colors?.border || '#d9d9d9',
+  };
+
+  const cancelButtonTextStyle: TextStyle = {
+    fontSize: theme?.typography?.fontSize?.sm || 14,
+    color: colors?.text || '#333333',
+  };
+
+  const okButtonStyle: ViewStyle = {
+    backgroundColor: colors?.primary || '#1890ff',
+  };
+
+  const okButtonTextStyle: TextStyle = {
+    fontSize: theme?.typography?.fontSize?.sm || 14,
+    color: colors?.buttonText || '#ffffff',
+    fontWeight: theme?.typography?.fontWeight?.medium || '500',
+  };
+
   const renderHeader = () => {
     if (!title && !closable) return null;
 
     return (
-      <View style={styles.header}>
+      <View style={headerStyle}>
         {title && (
-          <Text style={[styles.title, titleStyle]} numberOfLines={1}>
+          <Text style={[themeAwareTitleStyle, titleStyle]} numberOfLines={1}>
             {title}
           </Text>
         )}
         {closable && (
           <TouchableOpacity
             onPress={handleClose}
-            style={styles.closeButton}
+            style={closeButtonStyle}
             hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
           >
-            <Text style={styles.closeIcon}>✕</Text>
+            <Text style={closeIconStyle}>✕</Text>
           </TouchableOpacity>
         )}
       </View>
@@ -135,23 +263,23 @@ const Modal: React.FC<ModalProps> = ({
 
   const renderFooter = () => {
     if (footer) {
-      return <View style={styles.footer}>{footer}</View>;
+      return <View style={footerStyle}>{footer}</View>;
     }
 
     if (operation) {
       return (
-        <View style={styles.footer}>
+        <View style={footerStyle}>
           <TouchableOpacity
             onPress={handleCancel}
-            style={[styles.button, styles.cancelButton]}
+            style={[buttonStyle, cancelButtonStyle]}
           >
-            <Text style={styles.cancelButtonText}>Cancel</Text>
+            <Text style={cancelButtonTextStyle}>Cancel</Text>
           </TouchableOpacity>
           <TouchableOpacity
             onPress={handleOk}
-            style={[styles.button, styles.okButton]}
+            style={[buttonStyle, okButtonStyle]}
           >
-            <Text style={styles.okButtonText}>OK</Text>
+            <Text style={okButtonTextStyle}>OK</Text>
           </TouchableOpacity>
         </View>
       );
@@ -163,7 +291,7 @@ const Modal: React.FC<ModalProps> = ({
   const getModalStyle = () => {
     if (popup) {
       return [
-        styles.popupModal,
+        popupModalStyle,
         {
           transform: [{ translateY: slideAnim }],
         },
@@ -172,7 +300,7 @@ const Modal: React.FC<ModalProps> = ({
     }
 
     return [
-      styles.centerModal,
+      centerModalStyle,
       {
         opacity: fadeAnim,
       },
@@ -182,7 +310,7 @@ const Modal: React.FC<ModalProps> = ({
 
   const getMaskStyle = () => {
     return [
-      styles.mask,
+      themeAwareMaskStyle,
       {
         opacity: fadeAnim,
       },
@@ -198,18 +326,18 @@ const Modal: React.FC<ModalProps> = ({
       onRequestClose={handleClose}
       testID={testID}
     >
-      <View style={styles.container}>
+      <View style={containerStyle}>
         <Animated.View style={getMaskStyle()}>
           <TouchableWithoutFeedback onPress={handleMaskPress}>
-            <View style={styles.maskTouchable} />
+            <View style={maskTouchableStyle} />
           </TouchableWithoutFeedback>
         </Animated.View>
 
         <Animated.View style={getModalStyle()}>
-          <View style={[styles.modal, bodyStyle]}>
+          <View style={[modalStyle, bodyStyle]}>
             {renderHeader()}
             
-            <View style={styles.content}>
+            <View style={contentStyle}>
               {children}
             </View>
             
@@ -220,113 +348,5 @@ const Modal: React.FC<ModalProps> = ({
     </RNModal>
   );
 };
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  mask: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
-  },
-  maskTouchable: {
-    flex: 1,
-  },
-  centerModal: {
-    justifyContent: 'center',
-    alignItems: 'center',
-    zIndex: 1,
-  },
-  popupModal: {
-    position: 'absolute',
-    bottom: 0,
-    left: 0,
-    right: 0,
-    zIndex: 1,
-  },
-  modal: {
-    backgroundColor: '#ffffff',
-    borderRadius: 8,
-    maxWidth: screenWidth - 32,
-    maxHeight: screenHeight - 100,
-    overflow: 'hidden',
-    elevation: 5,
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
-  },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: '#e8e8e8',
-  },
-  title: {
-    fontSize: 16,
-    fontWeight: '600',
-    color: '#333333',
-    flex: 1,
-  },
-  closeButton: {
-    marginLeft: 12,
-    padding: 4,
-  },
-  closeIcon: {
-    fontSize: 16,
-    color: '#666666',
-    fontWeight: 'bold',
-  },
-  content: {
-    padding: 16,
-    maxHeight: screenHeight - 200,
-  },
-  footer: {
-    flexDirection: 'row',
-    justifyContent: 'flex-end',
-    alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    borderTopWidth: StyleSheet.hairlineWidth,
-    borderTopColor: '#e8e8e8',
-  },
-  button: {
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    borderRadius: 4,
-    marginLeft: 8,
-    minWidth: 64,
-    alignItems: 'center',
-  },
-  cancelButton: {
-    backgroundColor: '#f5f5f5',
-    borderWidth: 1,
-    borderColor: '#d9d9d9',
-  },
-  cancelButtonText: {
-    fontSize: 14,
-    color: '#333333',
-  },
-  okButton: {
-    backgroundColor: '#1890ff',
-  },
-  okButtonText: {
-    fontSize: 14,
-    color: '#ffffff',
-    fontWeight: '500',
-  },
-});
 
 export default Modal;
