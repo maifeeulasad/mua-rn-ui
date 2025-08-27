@@ -26,3 +26,4 @@ export { default as Carousel } from './src/DataDisplay/Carousel';
 export { default as Grid } from './src/DataDisplay/Grid';
 export { default as Icon } from './src/DataDisplay/Icon';
 export { default as NoticeBar } from './src/DataDisplay/NoticeBar';
+export { default as Steps } from './src/DataDisplay/Steps';
