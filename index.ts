@@ -20,3 +20,4 @@ export { default as Radio, RadioGroup, RadioItem } from './src/DataEntry/Radio';
 export { default as Stepper } from './src/DataEntry/Stepper';
 export { default as Slider } from './src/DataEntry/Slider';
 export { default as SearchBar } from './src/DataEntry/SearchBar';
+export { default as Badge } from './src/DataDisplay/Badge';
