@@ -3,10 +3,10 @@ import {
   View,
   Text,
   TouchableOpacity,
-  StyleSheet,
   ViewStyle,
   TextStyle,
 } from 'react-native';
+import { useTheme, useColors } from '../themes';
 
 interface PaginationProps {
   current: number;
@@ -32,12 +32,21 @@ const Pagination: React.FC<PaginationProps> = ({
   simple = false,
   disabled = false,
   style,
-  activeColor = '#007AFF',
-  inactiveColor = '#F0F0F0',
-  textColor = '#333',
-  disabledColor = '#CCC',
+  activeColor,
+  inactiveColor,
+  textColor,
+  disabledColor,
 }) => {
+  const theme = useTheme();
+  const colors = useColors();
+  
   const totalPages = Math.ceil(total / pageSize);
+
+  // Use theme colors with fallbacks
+  const finalActiveColor = activeColor || colors?.primary || '#007AFF';
+  const finalInactiveColor = inactiveColor || colors?.surface || '#F0F0F0';
+  const finalTextColor = textColor || colors?.text || '#333';
+  const finalDisabledColor = disabledColor || colors?.buttonDisabled || '#CCC';
 
   const handlePageChange = (page: number) => {
     if (disabled || page < 1 || page > totalPages || page === current) {
@@ -46,34 +55,79 @@ const Pagination: React.FC<PaginationProps> = ({
     onChange(page);
   };
 
+  // Define styles using theme values
+  const containerStyle: ViewStyle = {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingVertical: theme?.spacing?.sm || 8,
+  };
+
+  const buttonStyle: ViewStyle = {
+    width: 36,
+    height: 36,
+    borderRadius: theme?.borderRadius?.sm || 6,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginHorizontal: 2,
+  };
+
+  const buttonTextStyle: TextStyle = {
+    fontSize: theme?.typography?.fontSize?.md || 16,
+    fontWeight: theme?.typography?.fontWeight?.semibold || '600',
+  };
+
+  const pageButtonStyle: ViewStyle = {
+    width: 36,
+    height: 36,
+    borderRadius: theme?.borderRadius?.sm || 6,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginHorizontal: 2,
+  };
+
+  const pageButtonTextStyle: TextStyle = {
+    fontSize: theme?.typography?.fontSize?.sm || 14,
+    fontWeight: theme?.typography?.fontWeight?.medium || '500',
+  };
+
+  const pageInfoStyle: ViewStyle = {
+    paddingHorizontal: theme?.spacing?.md || 12,
+  };
+
+  const pageTextStyle: TextStyle = {
+    fontSize: theme?.typography?.fontSize?.sm || 14,
+    fontWeight: theme?.typography?.fontWeight?.medium || '500',
+  };
+
   const renderSimplePagination = () => (
-    <View style={[styles.container, style]}>
+    <View style={[containerStyle, style]}>
       <TouchableOpacity
         style={[
-          styles.button,
-          { backgroundColor: current === 1 || disabled ? disabledColor : inactiveColor },
+          buttonStyle,
+          { backgroundColor: current === 1 || disabled ? finalDisabledColor : finalInactiveColor },
         ]}
         onPress={() => handlePageChange(current - 1)}
         disabled={current === 1 || disabled}
       >
-        <Text style={[styles.buttonText, { color: textColor }]}>‹</Text>
+        <Text style={[buttonTextStyle, { color: finalTextColor }]}>‹</Text>
       </TouchableOpacity>
 
-      <View style={styles.pageInfo}>
-        <Text style={[styles.pageText, { color: textColor }]}>
+      <View style={pageInfoStyle}>
+        <Text style={[pageTextStyle, { color: finalTextColor }]}>
           {current} / {totalPages}
         </Text>
       </View>
 
       <TouchableOpacity
         style={[
-          styles.button,
-          { backgroundColor: current === totalPages || disabled ? disabledColor : inactiveColor },
+          buttonStyle,
+          { backgroundColor: current === totalPages || disabled ? finalDisabledColor : finalInactiveColor },
         ]}
         onPress={() => handlePageChange(current + 1)}
         disabled={current === totalPages || disabled}
       >
-        <Text style={[styles.buttonText, { color: textColor }]}>›</Text>
+        <Text style={[buttonTextStyle, { color: finalTextColor }]}>›</Text>
       </TouchableOpacity>
     </View>
   );
@@ -93,20 +147,20 @@ const Pagination: React.FC<PaginationProps> = ({
         <TouchableOpacity
           key={i}
           style={[
-            styles.pageButton,
+            pageButtonStyle,
             {
-              backgroundColor: i === current ? activeColor : inactiveColor,
+              backgroundColor: i === current ? finalActiveColor : finalInactiveColor,
             },
-            disabled && { backgroundColor: disabledColor },
+            disabled && { backgroundColor: finalDisabledColor },
           ]}
           onPress={() => handlePageChange(i)}
           disabled={disabled}
         >
           <Text
             style={[
-              styles.pageButtonText,
+              pageButtonTextStyle,
               {
-                color: i === current ? '#fff' : textColor,
+                color: i === current ? (colors?.buttonText || '#fff') : finalTextColor,
               },
             ]}
           >
@@ -120,29 +174,29 @@ const Pagination: React.FC<PaginationProps> = ({
   };
 
   const renderFullPagination = () => (
-    <View style={[styles.container, style]}>
+    <View style={[containerStyle, style]}>
       <TouchableOpacity
         style={[
-          styles.button,
-          { backgroundColor: current === 1 || disabled ? disabledColor : inactiveColor },
+          buttonStyle,
+          { backgroundColor: current === 1 || disabled ? finalDisabledColor : finalInactiveColor },
         ]}
         onPress={() => handlePageChange(current - 1)}
         disabled={current === 1 || disabled}
       >
-        <Text style={[styles.buttonText, { color: textColor }]}>‹</Text>
+        <Text style={[buttonTextStyle, { color: finalTextColor }]}>‹</Text>
       </TouchableOpacity>
 
       {renderPageNumbers()}
 
       <TouchableOpacity
         style={[
-          styles.button,
-          { backgroundColor: current === totalPages || disabled ? disabledColor : inactiveColor },
+          buttonStyle,
+          { backgroundColor: current === totalPages || disabled ? finalDisabledColor : finalInactiveColor },
         ]}
         onPress={() => handlePageChange(current + 1)}
         disabled={current === totalPages || disabled}
       >
-        <Text style={[styles.buttonText, { color: textColor }]}>›</Text>
+        <Text style={[buttonTextStyle, { color: finalTextColor }]}>›</Text>
       </TouchableOpacity>
     </View>
   );
@@ -153,45 +207,5 @@ const Pagination: React.FC<PaginationProps> = ({
 
   return simple ? renderSimplePagination() : renderFullPagination();
 };
-
-const styles = StyleSheet.create({
-  container: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-    paddingVertical: 8,
-  },
-  button: {
-    width: 36,
-    height: 36,
-    borderRadius: 6,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginHorizontal: 2,
-  },
-  buttonText: {
-    fontSize: 16,
-    fontWeight: '600',
-  },
-  pageButton: {
-    width: 36,
-    height: 36,
-    borderRadius: 6,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginHorizontal: 2,
-  },
-  pageButtonText: {
-    fontSize: 14,
-    fontWeight: '500',
-  },
-  pageInfo: {
-    paddingHorizontal: 12,
-  },
-  pageText: {
-    fontSize: 14,
-    fontWeight: '500',
-  },
-});
 
 export default Pagination;
