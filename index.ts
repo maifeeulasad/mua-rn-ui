@@ -31,3 +31,4 @@ export { default as Tag } from './src/DataDisplay/Tag';
 export { default as List, ListItem } from './src/DataDisplay/List';
 export { default as Modal } from './src/Feedback/Modal';
 export { default as Progress } from './src/Feedback/Progress';
+export { default as Toast, ToastContainer } from './src/Feedback/Toast';
