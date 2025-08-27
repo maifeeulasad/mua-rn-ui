@@ -4,11 +4,11 @@ import {
   Text,
   TouchableOpacity,
   Modal,
-  StyleSheet,
   ViewStyle,
   TextStyle,
   Dimensions,
 } from 'react-native';
+import { useTheme, useColors } from '../themes';
 
 type TooltipPosition = 'top' | 'bottom' | 'left' | 'right';
 
@@ -28,15 +28,22 @@ const { width: screenWidth, height: screenHeight } = Dimensions.get('window');
 const Tooltip: React.FC<TooltipProps> = ({
   content,
   position = 'top',
-  backgroundColor = '#333',
-  textColor = '#fff',
+  backgroundColor,
+  textColor,
   arrowSize = 8,
   containerStyle,
   textStyle,
   children,
 }) => {
+  const theme = useTheme();
+  const colors = useColors();
+  
   const [isVisible, setIsVisible] = useState(false);
   const [targetLayout, setTargetLayout] = useState({ x: 0, y: 0, width: 0, height: 0 });
+
+  // Use theme colors with fallbacks
+  const finalBackgroundColor = backgroundColor || colors?.text || '#333';
+  const finalTextColor = textColor || colors?.buttonText || '#fff';
 
   const showTooltip = () => {
     setIsVisible(true);
@@ -82,10 +89,10 @@ const Tooltip: React.FC<TooltipProps> = ({
       left: Math.max(10, Math.min(left, screenWidth - tooltipWidth - 10)),
       width: tooltipWidth,
       minHeight: tooltipHeight,
-      backgroundColor,
-      borderRadius: 8,
-      paddingHorizontal: 12,
-      paddingVertical: 8,
+      backgroundColor: finalBackgroundColor,
+      borderRadius: theme?.borderRadius?.md || 8,
+      paddingHorizontal: theme?.spacing?.md || 12,
+      paddingVertical: theme?.spacing?.sm || 8,
       ...containerStyle,
     };
   };
@@ -107,12 +114,24 @@ const Tooltip: React.FC<TooltipProps> = ({
         animationType="fade"
       >
         <TouchableOpacity
-          style={styles.overlay}
+          style={{
+            flex: 1,
+            backgroundColor: colors?.overlay || 'rgba(0, 0, 0, 0.1)',
+          }}
           activeOpacity={1}
           onPress={hideTooltip}
         >
           <View style={getTooltipStyle()}>
-            <Text style={[styles.text, { color: textColor }, textStyle]}>
+            <Text
+              style={[
+                {
+                  fontSize: theme?.typography?.fontSize?.sm || 14,
+                  textAlign: 'center',
+                  color: finalTextColor,
+                },
+                textStyle,
+              ]}
+            >
               {content}
             </Text>
           </View>
@@ -121,16 +140,5 @@ const Tooltip: React.FC<TooltipProps> = ({
     </>
   );
 };
-
-const styles = StyleSheet.create({
-  overlay: {
-    flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.1)',
-  },
-  text: {
-    fontSize: 14,
-    textAlign: 'center',
-  },
-});
 
 export default Tooltip;
