@@ -9,6 +9,7 @@ import {
   ViewStyle,
   TextStyle,
 } from 'react-native';
+import { useTheme, useColors } from '../themes';
 
 export interface PickerItem {
   label: string;
@@ -53,6 +54,9 @@ const Picker: React.FC<PickerProps> = ({
   cancelText = 'Cancel',
   showConfirmCancel = true,
 }) => {
+  const theme = useTheme();
+  const colors = useColors();
+  
   const [isVisible, setIsVisible] = useState(false);
   const [tempSelectedValue, setTempSelectedValue] = useState(selectedValue);
 
@@ -99,51 +103,159 @@ const Picker: React.FC<PickerProps> = ({
       <TouchableOpacity
         key={index}
         style={[
-          styles.item,
+          itemStyleThemed,
           itemStyle,
-          isSelected && [styles.selectedItem, selectedItemStyle],
-          isDisabled && styles.disabledItem,
+          isSelected && [selectedItemStyleThemed, selectedItemStyle],
+          isDisabled && disabledItemStyleThemed,
         ]}
         onPress={() => handleItemPress(item, index)}
         disabled={isDisabled}
       >
         <Text
           style={[
-            styles.itemText,
+            itemTextStyleThemed,
             itemTextStyle,
-            isSelected && [styles.selectedItemText, selectedItemTextStyle],
-            isDisabled && styles.disabledItemText,
+            isSelected && [selectedItemTextStyleThemed, selectedItemTextStyle],
+            isDisabled && disabledItemTextStyleThemed,
           ]}
         >
           {item.label}
         </Text>
         {isSelected && (
-          <Text style={styles.checkmark}>✓</Text>
+          <Text style={checkmarkStyleThemed}>✓</Text>
         )}
       </TouchableOpacity>
     );
   };
 
+  // Theme-aware styles
+  const containerStyleThemed: ViewStyle = {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: theme.spacing.sm,
+    paddingVertical: theme.spacing.sm,
+    borderWidth: 1,
+    borderColor: colors.inputBorder,
+    borderRadius: theme.borderRadius.md,
+    backgroundColor: colors.inputBackground,
+    minHeight: 48,
+    opacity: disabled ? 0.6 : 1,
+    ...style,
+  };
+
+  const textStyleThemed: TextStyle = {
+    fontSize: theme.typography.fontSize.md,
+    color: colors.text,
+    flex: 1,
+    ...textStyle,
+  };
+
+  const placeholderStyleThemed: TextStyle = {
+    color: colors.inputPlaceholder,
+    ...placeholderStyle,
+  };
+
+  const arrowStyleThemed: TextStyle = {
+    fontSize: theme.typography.fontSize.sm,
+    color: colors.textSecondary,
+    marginLeft: theme.spacing.xs,
+  };
+
+  const modalOverlayStyleThemed: ViewStyle = {
+    flex: 1,
+    backgroundColor: colors.overlay,
+    justifyContent: 'flex-end',
+  };
+
+  const modalContentStyleThemed: ViewStyle = {
+    backgroundColor: colors.surface,
+    borderTopLeftRadius: theme.borderRadius.lg,
+    borderTopRightRadius: theme.borderRadius.lg,
+    maxHeight: '70%',
+    ...modalStyle,
+  };
+
+  const modalHeaderStyleThemed: ViewStyle = {
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+    paddingHorizontal: theme.spacing.md,
+    paddingVertical: theme.spacing.sm,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    borderBottomColor: colors.divider,
+  };
+
+  const cancelButtonStyleThemed: TextStyle = {
+    fontSize: theme.typography.fontSize.md,
+    color: colors.textSecondary,
+  };
+
+  const confirmButtonStyleThemed: TextStyle = {
+    fontSize: theme.typography.fontSize.md,
+    color: colors.primary,
+    fontWeight: theme.typography.fontWeight.semibold,
+  };
+
+  const itemsContainerStyleThemed: ViewStyle = {
+    maxHeight: 300,
+  };
+
+  const itemStyleThemed: ViewStyle = {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: theme.spacing.md,
+    paddingVertical: theme.spacing.md,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    borderBottomColor: colors.divider,
+  };
+
+  const selectedItemStyleThemed: ViewStyle = {
+    backgroundColor: colors.primaryLight + '20', // Add transparency
+  };
+
+  const disabledItemStyleThemed: ViewStyle = {
+    opacity: 0.5,
+  };
+
+  const itemTextStyleThemed: TextStyle = {
+    fontSize: theme.typography.fontSize.md,
+    color: colors.text,
+    flex: 1,
+  };
+
+  const selectedItemTextStyleThemed: TextStyle = {
+    color: colors.primary,
+    fontWeight: theme.typography.fontWeight.medium,
+  };
+
+  const disabledItemTextStyleThemed: TextStyle = {
+    color: colors.textDisabled,
+  };
+
+  const checkmarkStyleThemed: TextStyle = {
+    fontSize: theme.typography.fontSize.md,
+    color: colors.primary,
+    fontWeight: theme.typography.fontWeight.bold,
+  };
+
   return (
     <>
       <TouchableOpacity
-        style={[
-          styles.container,
-          { opacity: disabled ? 0.6 : 1 },
-          style,
-        ]}
+        style={containerStyleThemed}
         onPress={handleOpen}
         disabled={disabled}
       >
         <Text
           style={[
-            styles.text,
-            selectedItem ? textStyle : [styles.placeholder, placeholderStyle],
+            textStyleThemed,
+            selectedItem ? {} : placeholderStyleThemed,
           ]}
         >
           {selectedItem ? selectedItem.label : placeholder}
         </Text>
-        <Text style={styles.arrow}>▼</Text>
+        <Text style={arrowStyleThemed}>▼</Text>
       </TouchableOpacity>
 
       <Modal
@@ -152,20 +264,20 @@ const Picker: React.FC<PickerProps> = ({
         animationType="slide"
         onRequestClose={showConfirmCancel ? handleCancel : () => setIsVisible(false)}
       >
-        <View style={styles.modalOverlay}>
-          <View style={[styles.modalContent, modalStyle]}>
+        <View style={modalOverlayStyleThemed}>
+          <View style={modalContentStyleThemed}>
             {showConfirmCancel && (
-              <View style={styles.modalHeader}>
+              <View style={modalHeaderStyleThemed}>
                 <TouchableOpacity onPress={handleCancel}>
-                  <Text style={styles.cancelButton}>{cancelText}</Text>
+                  <Text style={cancelButtonStyleThemed}>{cancelText}</Text>
                 </TouchableOpacity>
                 <TouchableOpacity onPress={handleConfirm}>
-                  <Text style={styles.confirmButton}>{confirmText}</Text>
+                  <Text style={confirmButtonStyleThemed}>{confirmText}</Text>
                 </TouchableOpacity>
               </View>
             )}
             
-            <ScrollView style={styles.itemsContainer}>
+            <ScrollView style={itemsContainerStyleThemed}>
               {items.map(renderItem)}
             </ScrollView>
           </View>
@@ -174,97 +286,5 @@ const Picker: React.FC<PickerProps> = ({
     </>
   );
 };
-
-const styles = StyleSheet.create({
-  container: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 12,
-    paddingVertical: 12,
-    borderWidth: 1,
-    borderColor: '#D1D1D6',
-    borderRadius: 8,
-    backgroundColor: '#fff',
-    minHeight: 48,
-  },
-  text: {
-    fontSize: 16,
-    color: '#000',
-    flex: 1,
-  },
-  placeholder: {
-    color: '#999',
-  },
-  arrow: {
-    fontSize: 12,
-    color: '#666',
-    marginLeft: 8,
-  },
-  modalOverlay: {
-    flex: 1,
-    backgroundColor: 'rgba(0, 0, 0, 0.5)',
-    justifyContent: 'flex-end',
-  },
-  modalContent: {
-    backgroundColor: '#fff',
-    borderTopLeftRadius: 16,
-    borderTopRightRadius: 16,
-    maxHeight: '70%',
-  },
-  modalHeader: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: '#E0E0E0',
-  },
-  cancelButton: {
-    fontSize: 16,
-    color: '#666',
-  },
-  confirmButton: {
-    fontSize: 16,
-    color: '#007AFF',
-    fontWeight: '600',
-  },
-  itemsContainer: {
-    maxHeight: 300,
-  },
-  item: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 16,
-    paddingVertical: 16,
-    borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: '#E0E0E0',
-  },
-  selectedItem: {
-    backgroundColor: '#F0F8FF',
-  },
-  disabledItem: {
-    opacity: 0.5,
-  },
-  itemText: {
-    fontSize: 16,
-    color: '#000',
-    flex: 1,
-  },
-  selectedItemText: {
-    color: '#007AFF',
-    fontWeight: '500',
-  },
-  disabledItemText: {
-    color: '#999',
-  },
-  checkmark: {
-    fontSize: 16,
-    color: '#007AFF',
-    fontWeight: 'bold',
-  },
-});
 
 export default Picker;
