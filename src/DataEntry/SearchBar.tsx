@@ -9,6 +9,7 @@ import {
   TextStyle,
   TextInputProps,
 } from 'react-native';
+import { useTheme, useColors } from '../themes';
 
 interface SearchBarProps extends Omit<TextInputProps, 'style'> {
   value?: string;
@@ -58,14 +59,24 @@ const SearchBar: React.FC<SearchBarProps> = ({
   clearIconStyle,
   cancelButtonStyle,
   cancelTextStyle,
-  backgroundColor = '#F0F0F0',
-  borderColor = '#E0E0E0',
-  focusedBorderColor = '#007AFF',
+  backgroundColor,
+  borderColor,
+  focusedBorderColor,
   searchIcon,
   clearIcon,
   loadingIcon,
   ...textInputProps
 }) => {
+  const theme = useTheme();
+  const colors = useColors();
+
+  // Define theme-aware colors with prop fallbacks
+  const finalBackgroundColor = backgroundColor || colors?.surface || '#F0F0F0';
+  const finalBorderColor = borderColor || colors?.border || '#E0E0E0';
+  const finalFocusedBorderColor = focusedBorderColor || colors?.primary || '#007AFF';
+  const finalTextColor = colors?.text || '#000';
+  const finalPlaceholderColor = colors?.textSecondary || '#999';
+
   const [internalValue, setInternalValue] = useState(propValue || '');
   const [isFocused, setIsFocused] = useState(false);
   const inputRef = useRef<TextInput>(null);
@@ -111,8 +122,70 @@ const SearchBar: React.FC<SearchBarProps> = ({
   };
 
   const getBorderColor = () => {
-    if (isFocused) return focusedBorderColor;
-    return borderColor;
+    if (isFocused) return finalFocusedBorderColor;
+    return finalBorderColor;
+  };
+
+  // Define theme-aware styles
+  const containerStyleBase: ViewStyle = {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: theme?.spacing?.xs || 4,
+  };
+
+  const searchBarStyle: ViewStyle = {
+    flex: 1,
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: finalBackgroundColor,
+    borderRadius: theme?.borderRadius?.md || 8,
+    borderWidth: 1,
+    borderColor: getBorderColor(),
+    paddingHorizontal: theme?.spacing?.sm || 12,
+    minHeight: theme?.components?.input?.minHeight || 40,
+  };
+
+  const inputStyleBase: TextStyle = {
+    flex: 1,
+    fontSize: theme?.typography?.fontSize?.md || 16,
+    color: finalTextColor,
+    paddingVertical: theme?.spacing?.sm || 8,
+  };
+
+  const searchIconStyleBase: ViewStyle = {
+    marginRight: theme?.spacing?.sm || 8,
+    alignItems: 'center',
+    justifyContent: 'center',
+  };
+
+  const clearIconStyleBase: ViewStyle = {
+    marginLeft: theme?.spacing?.sm || 8,
+    padding: theme?.spacing?.xs || 4,
+    alignItems: 'center',
+    justifyContent: 'center',
+  };
+
+  const cancelButtonStyleBase: ViewStyle = {
+    marginLeft: theme?.spacing?.sm || 12,
+    paddingHorizontal: theme?.spacing?.sm || 8,
+    paddingVertical: theme?.spacing?.xs || 4,
+  };
+
+  const cancelTextStyleBase: TextStyle = {
+    fontSize: theme?.typography?.fontSize?.md || 16,
+    color: colors?.primary || '#007AFF',
+    fontWeight: theme?.typography?.fontWeight?.medium || '500',
+  };
+
+  const searchIconTextStyle: TextStyle = {
+    fontSize: 16,
+    color: finalPlaceholderColor,
+  };
+
+  const clearIconTextStyle: TextStyle = {
+    fontSize: 16,
+    color: finalPlaceholderColor,
+    fontWeight: theme?.typography?.fontWeight?.bold || 'bold',
   };
 
   const renderSearchIcon = () => {
@@ -120,7 +193,7 @@ const SearchBar: React.FC<SearchBarProps> = ({
 
     if (loading && loadingIcon) {
       return (
-        <View style={[styles.searchIcon, searchIconStyle]}>
+        <View style={[searchIconStyleBase, searchIconStyle]}>
           {loadingIcon}
         </View>
       );
@@ -128,15 +201,15 @@ const SearchBar: React.FC<SearchBarProps> = ({
 
     if (searchIcon) {
       return (
-        <View style={[styles.searchIcon, searchIconStyle]}>
+        <View style={[searchIconStyleBase, searchIconStyle]}>
           {searchIcon}
         </View>
       );
     }
 
     return (
-      <View style={[styles.searchIcon, searchIconStyle]}>
-        <Text style={styles.searchIconText}>🔍</Text>
+      <View style={[searchIconStyleBase, searchIconStyle]}>
+        <Text style={searchIconTextStyle}>🔍</Text>
       </View>
     );
   };
@@ -147,7 +220,7 @@ const SearchBar: React.FC<SearchBarProps> = ({
     if (clearIcon) {
       return (
         <TouchableOpacity
-          style={[styles.clearIcon, clearIconStyle]}
+          style={[clearIconStyleBase, clearIconStyle]}
           onPress={handleClear}
           disabled={disabled}
         >
@@ -158,11 +231,11 @@ const SearchBar: React.FC<SearchBarProps> = ({
 
     return (
       <TouchableOpacity
-        style={[styles.clearIcon, clearIconStyle]}
+        style={[clearIconStyleBase, clearIconStyle]}
         onPress={handleClear}
         disabled={disabled}
       >
-        <Text style={styles.clearIconText}>✕</Text>
+        <Text style={clearIconTextStyle}>✕</Text>
       </TouchableOpacity>
     );
   };
@@ -172,11 +245,11 @@ const SearchBar: React.FC<SearchBarProps> = ({
 
     return (
       <TouchableOpacity
-        style={[styles.cancelButton, cancelButtonStyle]}
+        style={[cancelButtonStyleBase, cancelButtonStyle]}
         onPress={handleCancel}
         disabled={disabled}
       >
-        <Text style={[styles.cancelText, cancelTextStyle]}>
+        <Text style={[cancelTextStyleBase, cancelTextStyle]}>
           {cancelText}
         </Text>
       </TouchableOpacity>
@@ -184,13 +257,11 @@ const SearchBar: React.FC<SearchBarProps> = ({
   };
 
   return (
-    <View style={[styles.container, containerStyle]}>
+    <View style={[containerStyleBase, containerStyle]}>
       <View
         style={[
-          styles.searchContainer,
+          searchBarStyle,
           {
-            backgroundColor,
-            borderColor: getBorderColor(),
             opacity: disabled ? 0.6 : 1,
           },
           style,
@@ -200,21 +271,21 @@ const SearchBar: React.FC<SearchBarProps> = ({
         
         <TextInput
           ref={inputRef}
-          style={[styles.input, inputStyle]}
+          style={[inputStyleBase, inputStyle]}
           value={value}
           onChangeText={handleChangeText}
           onSubmitEditing={handleSubmitEditing}
           onFocus={handleFocus}
           onBlur={handleBlur}
           placeholder={placeholder}
-          placeholderTextColor="#999"
+          placeholderTextColor={finalPlaceholderColor}
           editable={!disabled && !loading}
           returnKeyType="search"
           autoCorrect={false}
           autoCapitalize="none"
           {...textInputProps}
         />
-        
+
         {renderClearIcon()}
       </View>
       
@@ -222,58 +293,5 @@ const SearchBar: React.FC<SearchBarProps> = ({
     </View>
   );
 };
-
-const styles = StyleSheet.create({
-  container: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    marginBottom: 8,
-  },
-  searchContainer: {
-    flex: 1,
-    flexDirection: 'row',
-    alignItems: 'center',
-    borderWidth: 1,
-    borderRadius: 20,
-    paddingHorizontal: 12,
-    minHeight: 40,
-  },
-  searchIcon: {
-    marginRight: 8,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  searchIconText: {
-    fontSize: 16,
-    color: '#666',
-  },
-  input: {
-    flex: 1,
-    fontSize: 16,
-    color: '#000',
-    paddingVertical: 8,
-  },
-  clearIcon: {
-    marginLeft: 8,
-    alignItems: 'center',
-    justifyContent: 'center',
-    width: 20,
-    height: 20,
-  },
-  clearIconText: {
-    fontSize: 14,
-    color: '#666',
-    fontWeight: 'bold',
-  },
-  cancelButton: {
-    marginLeft: 12,
-    paddingHorizontal: 8,
-    paddingVertical: 8,
-  },
-  cancelText: {
-    fontSize: 16,
-    color: '#007AFF',
-  },
-});
 
 export default SearchBar;
