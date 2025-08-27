@@ -22,7 +22,13 @@
     "tooltip",
     "pagination",
     "tabs",
-    "tabbar"
+    "tabbar",
+    "data-entry",
+    "form",
+    "input",
+    "checkbox",
+    "switch",
+    "datepicker"
   ],
   "author": "Maifee Ul Asad<maifeeulasad@gmail.com>",
   "license": "MIT",
