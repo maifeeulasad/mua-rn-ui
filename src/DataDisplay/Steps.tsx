@@ -6,6 +6,7 @@ import {
   TextStyle,
   StyleSheet 
 } from 'react-native';
+import { useTheme, useColors } from '../themes';
 
 export interface StepItem {
   title: string;
@@ -39,6 +40,8 @@ const Steps: React.FC<StepsProps> = ({
   descriptionStyle,
   testID,
 }) => {
+  const theme = useTheme();
+  const colors = useColors();
   const getStepStatus = (index: number): 'wait' | 'process' | 'finish' | 'error' => {
     if (steps[index]?.status) {
       return steps[index].status!;
@@ -57,37 +60,154 @@ const Steps: React.FC<StepsProps> = ({
     switch (stepStatus) {
       case 'finish':
         return {
-          iconBg: '#52c41a',
+          iconBg: colors.success,
           iconColor: '#ffffff',
-          titleColor: '#333333',
-          descriptionColor: '#666666',
-          lineColor: '#52c41a',
+          titleColor: colors.text,
+          descriptionColor: colors.textSecondary,
+          lineColor: colors.success,
         };
       case 'process':
         return {
-          iconBg: '#1890ff',
+          iconBg: colors.primary,
           iconColor: '#ffffff',
-          titleColor: '#1890ff',
-          descriptionColor: '#666666',
-          lineColor: '#d9d9d9',
+          titleColor: colors.primary,
+          descriptionColor: colors.textSecondary,
+          lineColor: colors.divider,
         };
       case 'error':
         return {
-          iconBg: '#ff4d4f',
+          iconBg: colors.error,
           iconColor: '#ffffff',
-          titleColor: '#ff4d4f',
-          descriptionColor: '#ff4d4f',
-          lineColor: '#d9d9d9',
+          titleColor: colors.error,
+          descriptionColor: colors.error,
+          lineColor: colors.divider,
         };
       default: // wait
         return {
-          iconBg: '#f5f5f5',
-          iconColor: '#999999',
-          titleColor: '#999999',
-          descriptionColor: '#999999',
-          lineColor: '#d9d9d9',
+          iconBg: colors.surface,
+          iconColor: colors.textDisabled,
+          titleColor: colors.textDisabled,
+          descriptionColor: colors.textDisabled,
+          lineColor: colors.divider,
         };
     }
+  };
+
+  // Theme-aware styles
+  const containerStyleThemed: ViewStyle = {
+    flexDirection: 'row',
+    alignItems: 'flex-start',
+  };
+
+  const verticalContainerStyleThemed: ViewStyle = {
+    flexDirection: 'column',
+  };
+
+  const stepStyleThemed: ViewStyle = {
+    flex: 1,
+  };
+
+  const horizontalStepStyleThemed: ViewStyle = {
+    alignItems: 'center',
+  };
+
+  const verticalStepStyleThemed: ViewStyle = {
+    flexDirection: 'row',
+    marginBottom: theme.spacing.md,
+  };
+
+  const stepHeaderStyleThemed: ViewStyle = {
+    position: 'relative',
+    alignItems: 'center',
+  };
+
+  const getIconContainerStyle = (stepStatus: string): ViewStyle => {
+    const stepColors = getStepColors(stepStatus);
+    const iconSize = size === 'small' ? 24 : 32;
+    
+    return {
+      justifyContent: 'center',
+      alignItems: 'center',
+      borderWidth: 1,
+      borderColor: 'transparent',
+      backgroundColor: stepColors.iconBg,
+      width: iconSize,
+      height: iconSize,
+      borderRadius: iconSize / 2,
+    };
+  };
+
+  const getIconTextStyle = (stepStatus: string): TextStyle => {
+    const stepColors = getStepColors(stepStatus);
+    return {
+      fontWeight: theme.typography.fontWeight.bold,
+      textAlign: 'center',
+      color: stepColors.iconColor,
+      fontSize: size === 'small' ? theme.typography.fontSize.xs : theme.typography.fontSize.sm,
+    };
+  };
+
+  const contentStyleThemed: ViewStyle = {
+    marginTop: theme.spacing.xs,
+    alignItems: 'center',
+  };
+
+  const verticalContentStyleThemed: ViewStyle = {
+    marginTop: 0,
+    marginLeft: theme.spacing.sm,
+    alignItems: 'flex-start',
+    flex: 1,
+  };
+
+  const verticalLabelContentStyleThemed: ViewStyle = {
+    alignItems: 'center',
+  };
+
+  const getTitleStyle = (stepStatus: string): TextStyle => {
+    const stepColors = getStepColors(stepStatus);
+    return {
+      fontSize: size === 'small' ? theme.typography.fontSize.xs : theme.typography.fontSize.sm,
+      fontWeight: theme.typography.fontWeight.semibold,
+      textAlign: 'center',
+      color: stepColors.titleColor,
+    };
+  };
+
+  const getDescriptionStyle = (stepStatus: string): TextStyle => {
+    const stepColors = getStepColors(stepStatus);
+    return {
+      fontSize: size === 'small' ? 11 : theme.typography.fontSize.xs,
+      marginTop: 4,
+      textAlign: 'center',
+      color: stepColors.descriptionColor,
+    };
+  };
+
+  const getHorizontalConnectorStyle = (stepStatus: string): ViewStyle => {
+    const stepColors = getStepColors(stepStatus);
+    return {
+      position: 'absolute',
+      top: '50%',
+      left: '100%',
+      right: '-100%',
+      height: 1,
+      zIndex: -1,
+      backgroundColor: stepColors.lineColor,
+    };
+  };
+
+  const getVerticalConnectorStyle = (stepStatus: string): ViewStyle => {
+    const stepColors = getStepColors(stepStatus);
+    return {
+      position: 'absolute',
+      top: '100%',
+      left: '50%',
+      width: 1,
+      height: theme.spacing.md,
+      zIndex: -1,
+      marginLeft: -0.5,
+      backgroundColor: stepColors.lineColor,
+    };
   };
 
   const renderStepIcon = (step: StepItem, index: number, stepStatus: string) => {
