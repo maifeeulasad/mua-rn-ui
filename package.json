@@ -1,7 +1,7 @@
 {
   "name": "mua-rn-ui",
   "version": "1.0.0",
-  "description": "A simple React Native UI library",
+  "description": "A comprehensive React Native UI library with 35 components across Layout, Navigation, Data Entry, Data Display, and Feedback categories",
   "main": "lib/index.js",
   "types": "lib/index.d.ts",
   "scripts": {
@@ -34,7 +34,21 @@
     "radio",
     "stepper",
     "slider",
-    "searchbar"
+    "searchbar",
+    "data-display",
+    "badge",
+    "card",
+    "carousel",
+    "grid",
+    "icon",
+    "noticebar",
+    "steps",
+    "tag",
+    "list",
+    "feedback",
+    "modal",
+    "progress",
+    "toast"
   ],
   "author": "Maifee Ul Asad<maifeeulasad@gmail.com>",
   "license": "MIT",
