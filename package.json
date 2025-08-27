@@ -28,7 +28,13 @@
     "input",
     "checkbox",
     "switch",
-    "datepicker"
+    "datepicker",
+    "imagepicker",
+    "picker",
+    "radio",
+    "stepper",
+    "slider",
+    "searchbar"
   ],
   "author": "Maifee Ul Asad<maifeeulasad@gmail.com>",
   "license": "MIT",
