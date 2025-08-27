@@ -9,6 +9,7 @@ import {
   TextStyle,
   Dimensions,
 } from 'react-native';
+import { useTheme, useColors } from '../themes';
 
 type DatePickerMode = 'date' | 'time' | 'datetime';
 
@@ -39,6 +40,9 @@ const DatePickerView: React.FC<DatePickerViewProps> = ({
   itemHeight = 40,
   visibleItemCount = 5,
 }) => {
+  const theme = useTheme();
+  const colors = useColors();
+  
   const [selectedDate, setSelectedDate] = useState(value);
 
   useEffect(() => {
@@ -48,6 +52,40 @@ const DatePickerView: React.FC<DatePickerViewProps> = ({
   const handleDateChange = (newDate: Date) => {
     setSelectedDate(newDate);
     onChange(newDate);
+  };
+
+  // Define theme-aware styles
+  const containerStyle: ViewStyle = {
+    flex: 1,
+    backgroundColor: colors?.background || '#FFFFFF',
+  };
+
+  const pickerContainerStyle: ViewStyle = {
+    flexDirection: 'row',
+    height: itemHeight * visibleItemCount,
+    backgroundColor: colors?.surface || '#FFFFFF',
+  };
+
+  const columnStyle: ViewStyle = {
+    flex: 1,
+    alignItems: 'center',
+  };
+
+  const itemStyle: ViewStyle = {
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingHorizontal: theme?.spacing?.sm || 8,
+  };
+
+  const itemTextStyle: TextStyle = {
+    fontSize: theme?.typography?.fontSize?.md || 16,
+    color: colors?.textSecondary || '#666',
+    fontWeight: theme?.typography?.fontWeight?.normal || '400',
+  };
+
+  const selectedItemTextStyle: TextStyle = {
+    color: colors?.primary || '#007AFF',
+    fontWeight: theme?.typography?.fontWeight?.semibold || '600',
   };
 
   const renderDatePicker = () => {
@@ -61,12 +99,12 @@ const DatePickerView: React.FC<DatePickerViewProps> = ({
     const days = Array.from({ length: daysInMonth }, (_, i) => i + 1);
 
     const renderColumn = (
-      items: (number | string)[],
+      items: number[],
       selectedItem: number,
       onSelect: (item: number) => void,
       formatter?: (item: number) => string
     ) => (
-      <View style={styles.column}>
+      <View style={columnStyle}>
         <ScrollView
           showsVerticalScrollIndicator={false}
           snapToInterval={itemHeight}
@@ -74,22 +112,21 @@ const DatePickerView: React.FC<DatePickerViewProps> = ({
           contentContainerStyle={{ paddingVertical: itemHeight * 2 }}
         >
           {items.map((item, index) => {
-            const numItem = typeof item === 'number' ? item : parseInt(item.toString());
-            const isSelected = numItem === selectedItem;
+            const isSelected = item === selectedItem;
             return (
               <TouchableOpacity
                 key={index}
-                style={[styles.item, { height: itemHeight }]}
-                onPress={() => onSelect(numItem)}
+                style={[itemStyle, { height: itemHeight }]}
+                onPress={() => onSelect(item)}
               >
                 <Text
                   style={[
-                    styles.itemText,
+                    itemTextStyle,
                     textStyle,
-                    isSelected && [styles.selectedText, selectedTextStyle],
+                    isSelected && [selectedItemTextStyle, selectedTextStyle],
                   ]}
                 >
-                  {formatter ? formatter(numItem) : numItem}
+                  {formatter ? formatter(item) : item.toString().padStart(2, '0')}
                 </Text>
               </TouchableOpacity>
             );
@@ -99,7 +136,7 @@ const DatePickerView: React.FC<DatePickerViewProps> = ({
     );
 
     return (
-      <View style={styles.pickerContainer}>
+      <View style={pickerContainerStyle}>
         {renderColumn(years, currentYear, (year) => {
           handleDateChange(new Date(year, currentMonth, currentDay));
         })}
@@ -126,7 +163,7 @@ const DatePickerView: React.FC<DatePickerViewProps> = ({
       onSelect: (item: number) => void,
       formatter?: (item: number) => string
     ) => (
-      <View style={styles.column}>
+      <View style={columnStyle}>
         <ScrollView
           showsVerticalScrollIndicator={false}
           snapToInterval={itemHeight}
@@ -138,14 +175,14 @@ const DatePickerView: React.FC<DatePickerViewProps> = ({
             return (
               <TouchableOpacity
                 key={index}
-                style={[styles.item, { height: itemHeight }]}
+                style={[itemStyle, { height: itemHeight }]}
                 onPress={() => onSelect(item)}
               >
                 <Text
                   style={[
-                    styles.itemText,
+                    itemTextStyle,
                     textStyle,
-                    isSelected && [styles.selectedText, selectedTextStyle],
+                    isSelected && [selectedItemTextStyle, selectedTextStyle],
                   ]}
                 >
                   {formatter ? formatter(item) : item}
@@ -158,7 +195,7 @@ const DatePickerView: React.FC<DatePickerViewProps> = ({
     );
 
     return (
-      <View style={styles.pickerContainer}>
+      <View style={pickerContainerStyle}>
         {renderColumn(hours, currentHour, (hour) => {
           const newDate = new Date(selectedDate);
           newDate.setHours(hour);
@@ -174,39 +211,11 @@ const DatePickerView: React.FC<DatePickerViewProps> = ({
   };
 
   return (
-    <View style={[styles.container, style]}>
+    <View style={[containerStyle, style]}>
       {(mode === 'date' || mode === 'datetime') && renderDatePicker()}
       {(mode === 'time' || mode === 'datetime') && renderTimePicker()}
     </View>
   );
 };
-
-const styles = StyleSheet.create({
-  container: {
-    backgroundColor: '#fff',
-  },
-  pickerContainer: {
-    flexDirection: 'row',
-    justifyContent: 'space-around',
-    alignItems: 'center',
-  },
-  column: {
-    flex: 1,
-    height: 200,
-  },
-  item: {
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  itemText: {
-    fontSize: 16,
-    color: '#666',
-  },
-  selectedText: {
-    fontSize: 18,
-    fontWeight: '600',
-    color: '#007AFF',
-  },
-});
 
 export default DatePickerView;
