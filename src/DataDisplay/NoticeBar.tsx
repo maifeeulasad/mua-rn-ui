@@ -8,6 +8,7 @@ import {
   TextStyle,
   StyleSheet 
 } from 'react-native';
+import { useTheme, useColors } from '../themes';
 
 export interface NoticeBarProps {
   children?: React.ReactNode;
@@ -43,6 +44,9 @@ const NoticeBar: React.FC<NoticeBarProps> = ({
   visible = true,
   testID,
 }) => {
+  const theme = useTheme();
+  const colors = useColors();
+  
   const [isVisible, setIsVisible] = useState(visible);
   const scrollAnimation = useRef(new Animated.Value(0)).current;
   const fadeAnimation = useRef(new Animated.Value(visible ? 1 : 0)).current;
@@ -100,45 +104,94 @@ const NoticeBar: React.FC<NoticeBarProps> = ({
     switch (type) {
       case 'alert':
         return {
-          backgroundColor: '#fff7e6',
-          borderColor: '#ffd591',
-          textColor: '#fa8c16',
+          backgroundColor: colors.warning + '20', // Add transparency
+          borderColor: colors.warning + '80',
+          textColor: colors.warning,
         };
       case 'error':
         return {
-          backgroundColor: '#fff2f0',
-          borderColor: '#ffccc7',
-          textColor: '#ff4d4f',
+          backgroundColor: colors.error + '20',
+          borderColor: colors.error + '80',
+          textColor: colors.error,
         };
       case 'success':
         return {
-          backgroundColor: '#f6ffed',
-          borderColor: '#b7eb8f',
-          textColor: '#52c41a',
+          backgroundColor: colors.success + '20',
+          borderColor: colors.success + '80',
+          textColor: colors.success,
         };
       default:
         return {
-          backgroundColor: '#e6f7ff',
-          borderColor: '#91d5ff',
-          textColor: '#1890ff',
+          backgroundColor: colors.info + '20' || colors.primary + '20',
+          borderColor: colors.info + '80' || colors.primary + '80',
+          textColor: colors.info || colors.primary,
         };
     }
+  };
+
+  // Theme-aware styles
+  const containerStyleThemed: ViewStyle = {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: theme.spacing.sm,
+    paddingVertical: theme.spacing.xs,
+    borderWidth: 1,
+    borderRadius: theme.borderRadius.sm,
+    marginVertical: 2,
+  };
+
+  const linkModeStyleThemed: ViewStyle = {
+    // Add any link-specific styles
+  };
+
+  const iconContainerStyleThemed: ViewStyle = {
+    marginRight: theme.spacing.xs,
+    alignItems: 'center',
+    justifyContent: 'center',
+  };
+
+  const contentContainerStyleThemed: ViewStyle = {
+    flex: 1,
+    overflow: 'hidden',
+  };
+
+  const marqueeContainerStyleThemed: ViewStyle = {
+    flexDirection: 'row',
+  };
+
+  const textStyleThemed: TextStyle = {
+    fontSize: theme.typography.fontSize.sm,
+    lineHeight: theme.typography.lineHeight.sm,
+  };
+
+  const actionContainerStyleThemed: ViewStyle = {
+    marginLeft: theme.spacing.xs,
+  };
+
+  const closeButtonStyleThemed: ViewStyle = {
+    marginLeft: theme.spacing.xs,
+    padding: theme.spacing.xs / 2,
+  };
+
+  const closeIconStyleThemed: TextStyle = {
+    fontSize: theme.typography.fontSize.xs,
+    fontWeight: theme.typography.fontWeight.bold,
   };
 
   const typeStyles = getTypeStyles();
 
   const containerStyles: ViewStyle[] = [
-    styles.container,
+    containerStyleThemed,
     {
       backgroundColor: typeStyles.backgroundColor,
       borderColor: typeStyles.borderColor,
     },
-    ...(mode === 'link' ? [styles.linkMode] : []),
+    ...(mode === 'link' ? [linkModeStyleThemed] : []),
     ...(style ? [style] : []),
   ];
 
   const contentTextStyles: TextStyle[] = [
-    styles.text,
+    textStyleThemed,
     {
       color: typeStyles.textColor,
     },
@@ -155,10 +208,10 @@ const NoticeBar: React.FC<NoticeBarProps> = ({
     return (
       <TouchableOpacity
         onPress={handleClose}
-        style={styles.closeButton}
+        style={closeButtonStyleThemed}
         hitSlop={{ top: 10, bottom: 10, left: 10, right: 10 }}
       >
-        <Text style={[styles.closeIcon, { color: typeStyles.textColor }]}>✕</Text>
+        <Text style={[closeIconStyleThemed, { color: typeStyles.textColor }]}>✕</Text>
       </TouchableOpacity>
     );
   };
@@ -175,7 +228,7 @@ const NoticeBar: React.FC<NoticeBarProps> = ({
         return (
           <Animated.View
             style={[
-              styles.marqueeContainer,
+              marqueeContainerStyleThemed,
               {
                 transform: [
                   {
@@ -209,13 +262,13 @@ const NoticeBar: React.FC<NoticeBarProps> = ({
       ]}
       testID={testID}
     >
-      {icon && <View style={styles.iconContainer}>{icon}</View>}
+      {icon && <View style={iconContainerStyleThemed}>{icon}</View>}
       
-      <View style={styles.contentContainer}>
+      <View style={contentContainerStyleThemed}>
         {renderContent()}
       </View>
       
-      {action && <View style={styles.actionContainer}>{action}</View>}
+      {action && <View style={actionContainerStyleThemed}>{action}</View>}
       {renderCloseButton()}
     </Animated.View>
   );
@@ -230,47 +283,5 @@ const NoticeBar: React.FC<NoticeBarProps> = ({
 
   return content;
 };
-
-const styles = StyleSheet.create({
-  container: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    borderWidth: 1,
-    borderRadius: 4,
-    marginVertical: 2,
-  },
-  linkMode: {
-    // Add any link-specific styles
-  },
-  iconContainer: {
-    marginRight: 8,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  contentContainer: {
-    flex: 1,
-    overflow: 'hidden',
-  },
-  marqueeContainer: {
-    flexDirection: 'row',
-  },
-  text: {
-    fontSize: 14,
-    lineHeight: 20,
-  },
-  actionContainer: {
-    marginLeft: 8,
-  },
-  closeButton: {
-    marginLeft: 8,
-    padding: 4,
-  },
-  closeIcon: {
-    fontSize: 12,
-    fontWeight: 'bold',
-  },
-});
 
 export default NoticeBar;
