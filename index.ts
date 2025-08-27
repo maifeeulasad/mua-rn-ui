@@ -16,3 +16,4 @@ export { default as Switch } from './src/DataEntry/Switch';
 export { default as Button } from './src/DataEntry/Button';
 export { default as ImagePicker } from './src/DataEntry/ImagePicker';
 export { default as Picker } from './src/DataEntry/Picker';
+export { default as Radio, RadioGroup, RadioItem } from './src/DataEntry/Radio';
