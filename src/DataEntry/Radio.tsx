@@ -7,6 +7,7 @@ import {
   ViewStyle,
   TextStyle,
 } from 'react-native';
+import { useTheme, useColors } from '../themes';
 
 export interface RadioOption {
   label: string;
@@ -60,41 +61,61 @@ const RadioOption: React.FC<RadioOptionProps> = ({
   labelStyle,
   radioStyle,
 }) => {
+  const theme = useTheme();
+  const colors = useColors();
+  
   const isDisabled = disabled || option.disabled;
+
+  // Define theme-aware colors with prop fallbacks
+  const finalColor = color || colors?.primary || '#007AFF';
+  const finalBackgroundColor = backgroundColor || colors?.background || '#fff';
+  const finalBorderColor = borderColor || colors?.border || '#D1D1D6';
+  const finalDisabledColor = disabledColor || colors?.textDisabled || '#C7C7CC';
+  const finalTextColor = colors?.text || '#000';
 
   const radioStyles: ViewStyle = {
     width: size,
     height: size,
     borderWidth: 2,
     borderRadius: size / 2,
-    borderColor: isDisabled ? disabledColor : selected ? color : borderColor,
-    backgroundColor: isDisabled ? disabledColor : backgroundColor,
+    borderColor: isDisabled ? finalDisabledColor : selected ? finalColor : finalBorderColor,
+    backgroundColor: isDisabled ? finalDisabledColor : finalBackgroundColor,
     alignItems: 'center',
     justifyContent: 'center',
     ...radioStyle,
   };
 
+  const optionContainerStyle: ViewStyle = {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: theme?.spacing?.sm || 8,
+    marginRight: theme?.spacing?.md || 16,
+  };
+
+  const dotStyle: ViewStyle = {
+    position: 'absolute',
+    width: size * 0.5,
+    height: size * 0.5,
+    borderRadius: (size * 0.5) / 2,
+    backgroundColor: isDisabled ? colors?.surface || '#fff' : finalColor,
+  };
+
+  const labelTextStyle: TextStyle = {
+    marginLeft: theme?.spacing?.sm || 8,
+    fontSize: theme?.typography?.fontSize?.md || 16,
+    flex: 1,
+    color: isDisabled ? finalDisabledColor : finalTextColor,
+  };
+
   const renderDot = () => {
     if (!selected) return null;
     
-    return (
-      <View
-        style={[
-          styles.dot,
-          {
-            width: size * 0.5,
-            height: size * 0.5,
-            borderRadius: (size * 0.5) / 2,
-            backgroundColor: isDisabled ? '#fff' : color,
-          },
-        ]}
-      />
-    );
+    return <View style={dotStyle} />;
   };
 
   return (
     <TouchableOpacity
-      style={[styles.optionContainer, optionStyle]}
+      style={[optionContainerStyle, optionStyle]}
       onPress={onPress}
       disabled={isDisabled}
       activeOpacity={0.7}
@@ -102,13 +123,7 @@ const RadioOption: React.FC<RadioOptionProps> = ({
       <View style={radioStyles}>
         {renderDot()}
       </View>
-      <Text
-        style={[
-          styles.label,
-          { color: isDisabled ? disabledColor : '#000' },
-          labelStyle,
-        ]}
-      >
+      <Text style={[labelTextStyle, labelStyle]}>
         {option.label}
       </Text>
     </TouchableOpacity>
@@ -122,15 +137,34 @@ const Radio: React.FC<RadioProps> = ({
   disabled = false,
   direction = 'vertical',
   size = 20,
-  color = '#007AFF',
-  backgroundColor = '#fff',
-  borderColor = '#D1D1D6',
-  disabledColor = '#C7C7CC',
+  color,
+  backgroundColor,
+  borderColor,
+  disabledColor,
   style,
   optionStyle,
   labelStyle,
   radioStyle,
 }) => {
+  const theme = useTheme();
+  const colors = useColors();
+
+  // Define theme-aware colors with prop fallbacks
+  const finalColor = color || colors?.primary || '#007AFF';
+  const finalBackgroundColor = backgroundColor || colors?.background || '#fff';
+  const finalBorderColor = borderColor || colors?.border || '#D1D1D6';
+  const finalDisabledColor = disabledColor || colors?.textDisabled || '#C7C7CC';
+
+  // Define theme-aware container styles
+  const containerStyle: ViewStyle = {
+    paddingVertical: theme?.spacing?.xs || 4,
+  };
+
+  const horizontalContainerStyle: ViewStyle = {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+  };
+
   const handleValueChange = (value: any) => {
     if (!disabled) {
       onValueChange(value);
@@ -140,8 +174,8 @@ const Radio: React.FC<RadioProps> = ({
   return (
     <View
       style={[
-        styles.container,
-        direction === 'horizontal' && styles.horizontalContainer,
+        containerStyle,
+        direction === 'horizontal' && horizontalContainerStyle,
         style,
       ]}
     >
@@ -153,10 +187,10 @@ const Radio: React.FC<RadioProps> = ({
           onPress={() => handleValueChange(option.value)}
           disabled={disabled}
           size={size}
-          color={color}
-          backgroundColor={backgroundColor}
-          borderColor={borderColor}
-          disabledColor={disabledColor}
+          color={finalColor}
+          backgroundColor={finalBackgroundColor}
+          borderColor={finalBorderColor}
+          disabledColor={finalDisabledColor}
           optionStyle={optionStyle}
           labelStyle={labelStyle}
           radioStyle={radioStyle}
@@ -200,29 +234,5 @@ export const RadioGroup: React.FC<RadioGroupProps> = ({
 
   return <Radio {...radioProps} options={options} />;
 };
-
-const styles = StyleSheet.create({
-  container: {
-    paddingVertical: 4,
-  },
-  horizontalContainer: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-  },
-  optionContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingVertical: 8,
-    marginRight: 16,
-  },
-  dot: {
-    position: 'absolute',
-  },
-  label: {
-    marginLeft: 8,
-    fontSize: 16,
-    flex: 1,
-  },
-});
 
 export default Radio;
