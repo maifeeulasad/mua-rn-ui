@@ -8,6 +8,7 @@ import {
   TextStyle,
   StyleSheet 
 } from 'react-native';
+import { useTheme, useColors } from '../themes';
 
 export interface ListItemProps {
   title: string;
@@ -50,9 +51,62 @@ const ListItem: React.FC<ListItemProps> = ({
   descriptionStyle,
   testID,
 }) => {
+  const theme = useTheme();
+  const colors = useColors();
+
+  // Theme-aware styles
+  const listItemStyleThemed: ViewStyle = {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: theme.spacing.md,
+    paddingVertical: theme.spacing.sm,
+    backgroundColor: colors.background,
+  };
+
+  const disabledItemStyleThemed: ViewStyle = {
+    opacity: 0.5,
+  };
+
+  const thumbStyleThemed: ViewStyle = {
+    marginRight: theme.spacing.sm,
+    alignItems: 'center',
+    justifyContent: 'center',
+  };
+
+  const contentStyleThemed: ViewStyle = {
+    flex: 1,
+    justifyContent: 'center',
+  };
+
+  const titleStyleThemed: TextStyle = {
+    fontSize: theme.typography.fontSize.md,
+    fontWeight: theme.typography.fontWeight.normal,
+    color: colors.text,
+    lineHeight: theme.typography.lineHeight.md,
+  };
+
+  const descriptionStyleThemed: TextStyle = {
+    fontSize: theme.typography.fontSize.xs,
+    color: colors.textSecondary,
+    marginTop: 2,
+    lineHeight: theme.typography.lineHeight.xs,
+  };
+
+  const extraStyleThemed: ViewStyle = {
+    marginLeft: theme.spacing.sm,
+    alignItems: 'center',
+    justifyContent: 'center',
+  };
+
+  const arrowStyleThemed: TextStyle = {
+    fontSize: theme.typography.fontSize.md,
+    color: colors.textDisabled,
+    marginLeft: theme.spacing.xs,
+  };
+
   const itemStyles: ViewStyle[] = [
-    styles.listItem,
-    ...(disabled ? [styles.disabledItem] : []),
+    listItemStyleThemed,
+    ...(disabled ? [disabledItemStyleThemed] : []),
     ...(style ? [style] : []),
   ];
 
@@ -66,7 +120,7 @@ const ListItem: React.FC<ListItemProps> = ({
     };
     
     return (
-      <Text style={styles.arrow}>
+      <Text style={arrowStyleThemed}>
         {arrowMap[arrow] || '→'}
       </Text>
     );
@@ -74,20 +128,20 @@ const ListItem: React.FC<ListItemProps> = ({
 
   const content = (
     <View style={itemStyles} testID={testID}>
-      {thumb && <View style={styles.thumb}>{thumb}</View>}
+      {thumb && <View style={thumbStyleThemed}>{thumb}</View>}
       
-      <View style={styles.content}>
-        <Text style={[styles.title, titleStyle]} numberOfLines={1}>
+      <View style={contentStyleThemed}>
+        <Text style={[titleStyleThemed, titleStyle]} numberOfLines={1}>
           {title}
         </Text>
         {description && (
-          <Text style={[styles.description, descriptionStyle]} numberOfLines={2}>
+          <Text style={[descriptionStyleThemed, descriptionStyle]} numberOfLines={2}>
             {description}
           </Text>
         )}
       </View>
       
-      {extra && <View style={styles.extra}>{extra}</View>}
+      {extra && <View style={extraStyleThemed}>{extra}</View>}
       {renderArrow()}
     </View>
   );
@@ -120,9 +174,55 @@ const List: React.FC<ListProps> = ({
   scrollable = false,
   testID,
 }) => {
+  const theme = useTheme();
+  const colors = useColors();
+
+  // Theme-aware styles
+  const containerStyleThemed: ViewStyle = {
+    backgroundColor: colors.background,
+  };
+
+  const borderedStyleThemed: ViewStyle = {
+    borderRadius: theme.borderRadius.md,
+    borderWidth: 1,
+    borderColor: colors.border,
+    overflow: 'hidden',
+  };
+
+  const headerStyleThemed: ViewStyle = {
+    paddingHorizontal: theme.spacing.md,
+    paddingVertical: theme.spacing.sm,
+    backgroundColor: colors.surface,
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    borderBottomColor: colors.divider,
+  };
+
+  const headerTextStyleThemed: TextStyle = {
+    fontSize: theme.typography.fontSize.sm,
+    fontWeight: theme.typography.fontWeight.semibold,
+    color: colors.text,
+  };
+
+  const footerStyleThemed: ViewStyle = {
+    paddingHorizontal: theme.spacing.md,
+    paddingVertical: theme.spacing.sm,
+    backgroundColor: colors.surface,
+    borderTopWidth: StyleSheet.hairlineWidth,
+    borderTopColor: colors.divider,
+  };
+
+  const footerTextStyleThemed: TextStyle = {
+    fontSize: theme.typography.fontSize.xs,
+    color: colors.textSecondary,
+  };
+
+  const listContentStyleThemed: ViewStyle = {
+    backgroundColor: colors.background,
+  };
+
   const containerStyles: ViewStyle[] = [
-    styles.container,
-    ...(bordered ? [styles.bordered] : []),
+    containerStyleThemed,
+    ...(bordered ? [borderedStyleThemed] : []),
     ...(style ? [style] : []),
   ];
 
@@ -131,13 +231,13 @@ const List: React.FC<ListProps> = ({
     
     if (typeof header === 'string') {
       return (
-        <View style={[styles.header, headerStyle]}>
-          <Text style={styles.headerText}>{header}</Text>
+        <View style={[headerStyleThemed, headerStyle]}>
+          <Text style={headerTextStyleThemed}>{header}</Text>
         </View>
       );
     }
     
-    return <View style={[styles.header, headerStyle]}>{header}</View>;
+    return <View style={[headerStyleThemed, headerStyle]}>{header}</View>;
   };
 
   const renderFooter = () => {
@@ -145,18 +245,24 @@ const List: React.FC<ListProps> = ({
     
     if (typeof footer === 'string') {
       return (
-        <View style={[styles.footer, footerStyle]}>
-          <Text style={styles.footerText}>{footer}</Text>
+        <View style={[footerStyleThemed, footerStyle]}>
+          <Text style={footerTextStyleThemed}>{footer}</Text>
         </View>
       );
     }
     
-    return <View style={[styles.footer, footerStyle]}>{footer}</View>;
+    return <View style={[footerStyleThemed, footerStyle]}>{footer}</View>;
+  };
+
+  // Add split item style
+  const splitItemStyleThemed: ViewStyle = {
+    borderBottomWidth: StyleSheet.hairlineWidth,
+    borderBottomColor: colors.divider,
   };
 
   const renderContent = () => {
     const contentContainerStyle = [
-      styles.listContent,
+      listContentStyleThemed,
       contentStyle,
     ];
 
@@ -166,7 +272,7 @@ const List: React.FC<ListProps> = ({
       const isLastItem = index === React.Children.count(children) - 1;
       const itemStyle = [
         child.props.style,
-        split && !isLastItem && styles.splitItem,
+        split && !isLastItem && splitItemStyleThemed,
       ];
       
       return React.cloneElement(child, {
@@ -202,86 +308,3 @@ const List: React.FC<ListProps> = ({
 // Export both components
 export { ListItem };
 export default List;
-
-const styles = StyleSheet.create({
-  container: {
-    backgroundColor: '#ffffff',
-  },
-  bordered: {
-    borderRadius: 8,
-    borderWidth: 1,
-    borderColor: '#e8e8e8',
-    overflow: 'hidden',
-  },
-  header: {
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    backgroundColor: '#fafafa',
-    borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: '#e8e8e8',
-  },
-  headerText: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: '#333333',
-  },
-  footer: {
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    backgroundColor: '#fafafa',
-    borderTopWidth: StyleSheet.hairlineWidth,
-    borderTopColor: '#e8e8e8',
-  },
-  footerText: {
-    fontSize: 12,
-    color: '#666666',
-  },
-  listContent: {
-    backgroundColor: '#ffffff',
-  },
-  listItem: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    backgroundColor: '#ffffff',
-  },
-  splitItem: {
-    borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: '#e8e8e8',
-  },
-  disabledItem: {
-    opacity: 0.5,
-  },
-  thumb: {
-    marginRight: 12,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  content: {
-    flex: 1,
-    justifyContent: 'center',
-  },
-  title: {
-    fontSize: 16,
-    fontWeight: '400',
-    color: '#333333',
-    lineHeight: 22,
-  },
-  description: {
-    fontSize: 12,
-    color: '#666666',
-    marginTop: 2,
-    lineHeight: 18,
-  },
-  extra: {
-    marginLeft: 12,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  arrow: {
-    fontSize: 16,
-    color: '#cccccc',
-    marginLeft: 8,
-  },
-});
