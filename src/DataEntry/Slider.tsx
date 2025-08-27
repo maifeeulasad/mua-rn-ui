@@ -8,6 +8,7 @@ import {
   Dimensions,
   LayoutChangeEvent,
 } from 'react-native';
+import { useTheme, useColors } from '../themes';
 
 // Note: For a production app, you'd want to use react-native-gesture-handler
 // This is a simplified version using basic React Native components
@@ -46,9 +47,9 @@ const Slider: React.FC<SliderProps> = ({
   maximumValue = 100,
   step = 1,
   disabled = false,
-  minimumTrackTintColor = '#007AFF',
-  maximumTrackTintColor = '#E0E0E0',
-  thumbTintColor = '#007AFF',
+  minimumTrackTintColor,
+  maximumTrackTintColor,
+  thumbTintColor,
   trackStyle,
   thumbStyle,
   minimumTrackStyle,
@@ -59,6 +60,15 @@ const Slider: React.FC<SliderProps> = ({
   thumbSize = 20,
   trackHeight = 4,
 }) => {
+  const theme = useTheme();
+  const colors = useColors();
+
+  // Define theme-aware colors with prop fallbacks
+  const finalMinimumTrackColor = minimumTrackTintColor || colors?.primary || '#007AFF';
+  const finalMaximumTrackColor = maximumTrackTintColor || colors?.border || '#E0E0E0';
+  const finalThumbColor = thumbTintColor || colors?.primary || '#007AFF';
+  const finalTextColor = colors?.textSecondary || '#666';
+
   const [sliderWidth, setSliderWidth] = useState(screenWidth - 32);
   const [isDragging, setIsDragging] = useState(false);
   const panRef = useRef(null);
@@ -113,16 +123,59 @@ const Slider: React.FC<SliderProps> = ({
     onValueChange(newValue);
   };
 
+  // Define theme-aware styles
+  const containerStyle: ViewStyle = {
+    paddingVertical: theme?.spacing?.sm || 8,
+  };
+
+  const valueTextStyle: TextStyle = {
+    fontSize: theme?.typography?.fontSize?.sm || 14,
+    color: finalTextColor,
+    textAlign: 'center',
+    marginBottom: theme?.spacing?.sm || 8,
+  };
+
+  const sliderContainerStyle: ViewStyle = {
+    height: 40,
+    justifyContent: 'center',
+    paddingHorizontal: theme?.spacing?.sm || 10,
+  };
+
+  const trackStyleBase: ViewStyle = {
+    position: 'absolute',
+    left: theme?.spacing?.sm || 10,
+    right: theme?.spacing?.sm || 10,
+    borderRadius: theme?.borderRadius?.sm || 2,
+  };
+
+  const minimumTrackStyleBase: ViewStyle = {
+    position: 'absolute',
+    left: theme?.spacing?.sm || 10,
+    borderRadius: theme?.borderRadius?.sm || 2,
+  };
+
+  const thumbStyleBase: ViewStyle = {
+    position: 'absolute',
+    shadowColor: colors?.shadow || '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: theme?.shadows?.md?.shadowOpacity || 0.25,
+    shadowRadius: theme?.shadows?.md?.shadowRadius || 3,
+    elevation: theme?.shadows?.md?.elevation || 5,
+  };
+
   return (
-    <View style={[styles.container, style]}>
+    <View style={[containerStyle, style]}>
       {showValue && (
-        <Text style={[styles.valueText, valueStyle]}>
+        <Text style={[valueTextStyle, valueStyle]}>
           {normalizedValue.toFixed(step < 1 ? 2 : 0)}
         </Text>
       )}
       
       <View
-        style={[styles.sliderContainer, { opacity: disabled ? 0.6 : 1 }]}
+        style={[sliderContainerStyle, { opacity: disabled ? 0.6 : 1 }]}
         onLayout={handleLayout}
         onStartShouldSetResponder={() => !disabled}
         onResponderGrant={handleTouch}
@@ -131,10 +184,10 @@ const Slider: React.FC<SliderProps> = ({
         {/* Track */}
         <View
           style={[
-            styles.track,
+            trackStyleBase,
             {
               height: trackHeight,
-              backgroundColor: maximumTrackTintColor,
+              backgroundColor: finalMaximumTrackColor,
             },
             trackStyle,
             maximumTrackStyle,
@@ -144,11 +197,11 @@ const Slider: React.FC<SliderProps> = ({
         {/* Minimum track (filled portion) */}
         <View
           style={[
-            styles.minimumTrack,
+            minimumTrackStyleBase,
             {
               height: trackHeight,
               width: thumbPosition + thumbSize / 2,
-              backgroundColor: minimumTrackTintColor,
+              backgroundColor: finalMinimumTrackColor,
             },
             trackStyle,
             minimumTrackStyle,
@@ -158,12 +211,12 @@ const Slider: React.FC<SliderProps> = ({
         {/* Thumb */}
         <View
           style={[
-            styles.thumb,
+            thumbStyleBase,
             {
               width: thumbSize,
               height: thumbSize,
               borderRadius: thumbSize / 2,
-              backgroundColor: thumbTintColor,
+              backgroundColor: finalThumbColor,
               left: thumbPosition,
               transform: [{ scale: isDragging ? 1.2 : 1 }],
             },
@@ -174,44 +227,5 @@ const Slider: React.FC<SliderProps> = ({
     </View>
   );
 };
-
-const styles = StyleSheet.create({
-  container: {
-    paddingVertical: 8,
-  },
-  valueText: {
-    fontSize: 14,
-    color: '#666',
-    textAlign: 'center',
-    marginBottom: 8,
-  },
-  sliderContainer: {
-    height: 40,
-    justifyContent: 'center',
-    paddingHorizontal: 10,
-  },
-  track: {
-    position: 'absolute',
-    left: 10,
-    right: 10,
-    borderRadius: 2,
-  },
-  minimumTrack: {
-    position: 'absolute',
-    left: 10,
-    borderRadius: 2,
-  },
-  thumb: {
-    position: 'absolute',
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.25,
-    shadowRadius: 3,
-    elevation: 5,
-  },
-});
 
 export default Slider;
