@@ -6,3 +6,4 @@ export { default as WhiteSpace } from './src/Layout/WhiteSpace';
 export { default as Drawer } from './src/Navigation/Drawer';
 export { default as Tooltip } from './src/Navigation/Tooltip';
 export { default as Pagination } from './src/Navigation/Pagination';
+export { default as TabBar } from './src/Navigation/TabBar';
