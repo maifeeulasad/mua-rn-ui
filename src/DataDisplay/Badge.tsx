@@ -2,10 +2,10 @@ import React from 'react';
 import {
   View,
   Text,
-  StyleSheet,
   ViewStyle,
   TextStyle,
 } from 'react-native';
+import { useTheme, useColors } from '../themes';
 
 interface BadgeProps {
   count?: number | string;
@@ -29,36 +29,49 @@ const Badge: React.FC<BadgeProps> = ({
   dot = false,
   status = 'default',
   color,
-  textColor = '#fff',
+  textColor,
   size = 'default',
   style,
   textStyle,
   children,
   offset = [0, 0],
 }) => {
+  const theme = useTheme();
+  const colors = useColors();
+  
   const getStatusColor = () => {
     if (color) return color;
     
-    switch (status) {
-      case 'success':
-        return '#52C41A';
-      case 'processing':
-        return '#1890FF';
-      case 'error':
-        return '#FF4D4F';
-      case 'warning':
-        return '#FAAD14';
-      default:
-        return '#FF4D4F';
-    }
+    // Use theme colors if available, fallback to hardcoded values
+    const statusColors = {
+      success: colors?.success || '#52C41A',
+      processing: colors?.primary || '#1890FF',
+      error: colors?.error || '#FF4D4F',
+      warning: colors?.warning || '#FAAD14',
+      default: colors?.error || '#FF4D4F',
+    };
+    
+    return statusColors[status];
   };
 
   const getSizes = () => {
+    const typography = theme?.typography;
+    
     switch (size) {
       case 'small':
-        return { height: 16, minWidth: 16, fontSize: 10, padding: 2 };
+        return { 
+          height: 16, 
+          minWidth: 16, 
+          fontSize: typography?.fontSize?.xs || 10, 
+          padding: 2 
+        };
       default:
-        return { height: 20, minWidth: 20, fontSize: 12, padding: 4 };
+        return { 
+          height: 20, 
+          minWidth: 20, 
+          fontSize: typography?.fontSize?.sm || 12, 
+          padding: 4 
+        };
     }
   };
 
@@ -95,13 +108,15 @@ const Badge: React.FC<BadgeProps> = ({
     ...style,
   };
 
-  const badgeTextStyle: TextStyle = {
-    color: textColor,
-    fontSize,
-    fontWeight: 'bold',
-    lineHeight: fontSize + 2,
-    ...textStyle,
-  };
+  const badgeTextStyle: TextStyle[] = [
+    {
+      color: textColor || colors?.buttonText || '#fff',
+      fontSize,
+      fontWeight: theme?.typography?.fontWeight?.bold || 'bold',
+      lineHeight: fontSize + 2,
+    },
+    textStyle && textStyle,
+  ].filter(Boolean) as TextStyle[];
 
   const renderBadge = () => {
     if (!shouldShow()) return null;
@@ -119,7 +134,7 @@ const Badge: React.FC<BadgeProps> = ({
 
   if (children) {
     return (
-      <View style={styles.wrapper}>
+      <View style={{ position: 'relative' }}>
         {children}
         {renderBadge()}
       </View>
@@ -128,11 +143,5 @@ const Badge: React.FC<BadgeProps> = ({
 
   return renderBadge();
 };
-
-const styles = StyleSheet.create({
-  wrapper: {
-    position: 'relative',
-  },
-});
 
 export default Badge;
