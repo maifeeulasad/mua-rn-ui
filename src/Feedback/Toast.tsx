@@ -6,8 +6,8 @@ import {
   Dimensions,
   ViewStyle, 
   TextStyle,
-  StyleSheet 
 } from 'react-native';
+import { useTheme, useColors } from '../themes';
 
 export interface ToastProps {
   content: string;
@@ -46,6 +46,9 @@ const Toast: React.FC<ToastProps> = ({
   textStyle,
   testID,
 }) => {
+  const theme = useTheme();
+  const colors = useColors();
+  
   const [visible, setVisible] = useState(false);
   const fadeAnim = useRef(new Animated.Value(0)).current;
   const scaleAnim = useRef(new Animated.Value(0.8)).current;
@@ -119,17 +122,18 @@ const Toast: React.FC<ToastProps> = ({
   };
 
   const getTypeColor = () => {
+    // Use theme colors with fallbacks
     switch (type) {
       case 'success':
-        return '#52c41a';
+        return colors?.success || '#52c41a';
       case 'fail':
-        return '#ff4d4f';
+        return colors?.error || '#ff4d4f';
       case 'loading':
-        return '#1890ff';
+        return colors?.primary || '#1890ff';
       case 'offline':
-        return '#fa8c16';
+        return colors?.warning || '#fa8c16';
       default:
-        return '#1890ff';
+        return colors?.info || '#1890ff';
     }
   };
 
@@ -161,32 +165,78 @@ const Toast: React.FC<ToastProps> = ({
     }
   };
 
+  // Define styles using theme values
+  const containerStyle: ViewStyle = {
+    paddingHorizontal: theme?.spacing?.lg || 20,
+  };
+
+  const toastStyle: ViewStyle = {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: theme?.spacing?.md || 16,
+    paddingVertical: theme?.spacing?.md || 12,
+    borderRadius: theme?.borderRadius?.md || 8,
+    maxWidth: screenWidth - 40,
+    minWidth: 120,
+    ...(theme?.shadows?.lg || {
+      elevation: 5,
+      shadowColor: colors?.shadow || '#000',
+      shadowOffset: {
+        width: 0,
+        height: 2,
+      },
+      shadowOpacity: 0.25,
+      shadowRadius: 3.84,
+    }),
+  };
+
+  const normalToastStyle: ViewStyle = {
+    borderWidth: 1,
+  };
+
+  const maskToastStyle: ViewStyle = {
+    borderWidth: 0,
+  };
+
+  const iconStyle: TextStyle = {
+    fontSize: theme?.typography?.fontSize?.md || 16,
+    marginRight: theme?.spacing?.sm || 8,
+    fontWeight: theme?.typography?.fontWeight?.bold || 'bold',
+  };
+
+  const contentStyle: TextStyle = {
+    flex: 1,
+    fontSize: theme?.typography?.fontSize?.sm || 14,
+    lineHeight: theme?.typography?.lineHeight?.sm || 20,
+    textAlign: 'left',
+  };
+
   const containerStyles: ViewStyle[] = [
-    styles.container,
+    containerStyle,
     getPositionStyle(),
     ...(style ? [style] : []),
   ];
 
   const toastStyles: ViewStyle[] = [
-    styles.toast,
+    toastStyle,
     {
-      backgroundColor: mask ? 'rgba(0, 0, 0, 0.8)' : '#ffffff',
+      backgroundColor: mask ? (colors?.overlay || 'rgba(0, 0, 0, 0.8)') : (colors?.surface || '#ffffff'),
       borderColor: getTypeColor(),
     },
-    ...(mask ? [styles.maskToast] : [styles.normalToast]),
+    ...(mask ? [maskToastStyle] : [normalToastStyle]),
   ];
 
   const iconStyles: TextStyle[] = [
-    styles.icon,
+    iconStyle,
     {
-      color: mask ? '#ffffff' : getTypeColor(),
+      color: mask ? (colors?.buttonText || '#ffffff') : getTypeColor(),
     },
   ];
 
   const contentTextStyles: TextStyle[] = [
-    styles.content,
+    contentStyle,
     {
-      color: mask ? '#ffffff' : '#333333',
+      color: mask ? (colors?.buttonText || '#ffffff') : (colors?.text || '#333333'),
     },
     ...(textStyle ? [textStyle] : []),
   ];
@@ -286,46 +336,6 @@ const ToastStatic: ToastManager = {
     toastRef.current?.offline(content, duration, onClose);
   },
 };
-
-const styles = StyleSheet.create({
-  container: {
-    paddingHorizontal: 20,
-  },
-  toast: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    borderRadius: 8,
-    maxWidth: screenWidth - 40,
-    minWidth: 120,
-    elevation: 5,
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.25,
-    shadowRadius: 3.84,
-  },
-  normalToast: {
-    borderWidth: 1,
-  },
-  maskToast: {
-    borderWidth: 0,
-  },
-  icon: {
-    fontSize: 16,
-    marginRight: 8,
-    fontWeight: 'bold',
-  },
-  content: {
-    flex: 1,
-    fontSize: 14,
-    lineHeight: 20,
-    textAlign: 'left',
-  },
-});
 
 // Export both the component and static methods
 export { ToastContainer };
