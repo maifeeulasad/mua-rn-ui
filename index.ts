@@ -3,3 +3,4 @@ export { default as Flex } from './src/Layout/Flex';
 export { default as View } from './src/Layout/View';
 export { default as WingBlank } from './src/Layout/WingBlank';
 export { default as WhiteSpace } from './src/Layout/WhiteSpace';
+export { default as Drawer } from './src/Navigation/Drawer';
