@@ -7,6 +7,7 @@ import {
   ViewStyle,
   TextStyle,
 } from 'react-native';
+import { useTheme, useColors } from '../themes';
 
 interface CheckboxProps {
   checked: boolean;
@@ -29,38 +30,72 @@ const Checkbox: React.FC<CheckboxProps> = ({
   label,
   disabled = false,
   size = 20,
-  color = '#007AFF',
-  backgroundColor = '#fff',
-  borderColor = '#D1D1D6',
-  disabledColor = '#C7C7CC',
+  color,
+  backgroundColor,
+  borderColor,
+  disabledColor,
   style,
   labelStyle,
   checkboxStyle,
 }) => {
-  const handlePress = () => {
-    if (!disabled) {
-      onChange(!checked);
-    }
+  const theme = useTheme();
+  const colors = useColors();
+
+  // Define theme-aware colors with prop fallbacks
+  const finalColor = color || colors?.primary || '#007AFF';
+  const finalBackgroundColor = backgroundColor || colors?.background || '#fff';
+  const finalBorderColor = borderColor || colors?.border || '#D1D1D6';
+  const finalDisabledColor = disabledColor || colors?.textDisabled || '#C7C7CC';
+  const finalTextColor = colors?.text || '#000';
+  // Define theme-aware styles
+  const containerStyle: ViewStyle = {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: theme?.spacing?.xs || 4,
   };
 
   const checkboxStyles: ViewStyle = {
     width: size,
     height: size,
     borderWidth: 2,
-    borderRadius: 4,
-    borderColor: disabled ? disabledColor : checked ? color : borderColor,
-    backgroundColor: disabled ? disabledColor : checked ? color : backgroundColor,
+    borderRadius: theme?.borderRadius?.sm || 4,
+    borderColor: disabled ? finalDisabledColor : checked ? finalColor : finalBorderColor,
+    backgroundColor: disabled ? finalDisabledColor : checked ? finalColor : finalBackgroundColor,
     alignItems: 'center',
     justifyContent: 'center',
     ...checkboxStyle,
+  };
+
+  const checkmarkStyle: ViewStyle = {
+    alignItems: 'center',
+    justifyContent: 'center',
+  };
+
+  const checkmarkTextStyle: TextStyle = {
+    fontSize: size * 0.6,
+    color: colors?.surface || '#fff',
+    fontWeight: theme?.typography?.fontWeight?.bold || 'bold',
+  };
+
+  const labelTextStyle: TextStyle = {
+    marginLeft: theme?.spacing?.sm || 8,
+    fontSize: theme?.typography?.fontSize?.md || 16,
+    flex: 1,
+    color: disabled ? finalDisabledColor : finalTextColor,
+  };
+
+  const handlePress = () => {
+    if (!disabled) {
+      onChange(!checked);
+    }
   };
 
   const renderCheckmark = () => {
     if (!checked) return null;
     
     return (
-      <View style={styles.checkmark}>
-        <Text style={[styles.checkmarkText, { fontSize: size * 0.6, color: '#fff' }]}>
+      <View style={checkmarkStyle}>
+        <Text style={checkmarkTextStyle}>
           ✓
         </Text>
       </View>
@@ -69,7 +104,7 @@ const Checkbox: React.FC<CheckboxProps> = ({
 
   return (
     <TouchableOpacity
-      style={[styles.container, style]}
+      style={[containerStyle, style]}
       onPress={handlePress}
       disabled={disabled}
       activeOpacity={0.7}
@@ -78,38 +113,12 @@ const Checkbox: React.FC<CheckboxProps> = ({
         {renderCheckmark()}
       </View>
       {label && (
-        <Text
-          style={[
-            styles.label,
-            { color: disabled ? disabledColor : '#000' },
-            labelStyle,
-          ]}
-        >
+        <Text style={[labelTextStyle, labelStyle]}>
           {label}
         </Text>
       )}
     </TouchableOpacity>
   );
 };
-
-const styles = StyleSheet.create({
-  container: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingVertical: 4,
-  },
-  checkmark: {
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  checkmarkText: {
-    fontWeight: 'bold',
-  },
-  label: {
-    marginLeft: 8,
-    fontSize: 16,
-    flex: 1,
-  },
-});
 
 export default Checkbox;
