@@ -7,6 +7,7 @@ import {
   ViewStyle,
   TextStyle,
 } from 'react-native';
+import { useTheme, useColors } from '../themes';
 
 interface StepperProps {
   value: number;
@@ -49,12 +50,22 @@ const Stepper: React.FC<StepperProps> = ({
   disabledButtonTextStyle,
   decreaseButtonStyle,
   increaseButtonStyle,
-  activeColor = '#007AFF',
-  inactiveColor = '#F0F0F0',
-  disabledColor = '#E0E0E0',
-  textColor = '#000',
-  disabledTextColor = '#999',
+  activeColor,
+  inactiveColor,
+  disabledColor,
+  textColor,
+  disabledTextColor,
 }) => {
+  const theme = useTheme();
+  const colors = useColors();
+
+  // Define theme-aware colors with prop fallbacks
+  const finalActiveColor = activeColor || colors?.primary || '#007AFF';
+  const finalInactiveColor = inactiveColor || colors?.border || '#F0F0F0';
+  const finalDisabledColor = disabledColor || colors?.border || '#E0E0E0';
+  const finalTextColor = textColor || colors?.text || '#000';
+  const finalDisabledTextColor = disabledTextColor || colors?.textDisabled || '#999';
+
   const canDecrease = !disabled && value > min;
   const canIncrease = !disabled && value < max;
 
@@ -71,6 +82,42 @@ const Stepper: React.FC<StepperProps> = ({
 
   const { buttonSize, fontSize, valueWidth } = getSizes();
 
+  // Define theme-aware styles
+  const containerStyle: ViewStyle = {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+  };
+
+  const buttonStyleBase: ViewStyle = {
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: colors?.shadow || '#000',
+    shadowOffset: {
+      width: 0,
+      height: 1,
+    },
+    shadowOpacity: theme?.shadows?.sm?.shadowOpacity || 0.2,
+    shadowRadius: theme?.shadows?.sm?.shadowRadius || 1,
+    elevation: theme?.shadows?.sm?.elevation || 2,
+  };
+
+  const buttonTextStyleBase: TextStyle = {
+    fontWeight: theme?.typography?.fontWeight?.bold || 'bold',
+    textAlign: 'center',
+  };
+
+  const valueContainerStyle: ViewStyle = {
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginHorizontal: theme?.spacing?.md || 12,
+  };
+
+  const valueTextStyleBase: TextStyle = {
+    fontWeight: theme?.typography?.fontWeight?.semibold || '600',
+    textAlign: 'center',
+  };
+
   const handleDecrease = () => {
     if (canDecrease) {
       const newValue = Math.max(min, value - step);
@@ -86,11 +133,11 @@ const Stepper: React.FC<StepperProps> = ({
   };
 
   const getButtonStyle = (canPress: boolean, extraStyle?: ViewStyle) => [
-    styles.button,
+    buttonStyleBase,
     {
       width: buttonSize,
       height: buttonSize,
-      backgroundColor: canPress ? activeColor : disabledColor,
+      backgroundColor: canPress ? finalActiveColor : finalDisabledColor,
       borderRadius: buttonSize / 2,
     },
     buttonStyle,
@@ -99,17 +146,17 @@ const Stepper: React.FC<StepperProps> = ({
   ];
 
   const getButtonTextStyle = (canPress: boolean) => [
-    styles.buttonText,
+    buttonTextStyleBase,
     {
       fontSize,
-      color: canPress ? '#fff' : disabledTextColor,
+      color: canPress ? colors?.surface || '#fff' : finalDisabledTextColor,
     },
     buttonTextStyle,
     !canPress && disabledButtonTextStyle,
   ];
 
   return (
-    <View style={[styles.container, style]}>
+    <View style={[containerStyle, style]}>
       <TouchableOpacity
         style={getButtonStyle(canDecrease, decreaseButtonStyle)}
         onPress={handleDecrease}
@@ -120,13 +167,13 @@ const Stepper: React.FC<StepperProps> = ({
       </TouchableOpacity>
 
       {showValue && (
-        <View style={[styles.valueContainer, { width: valueWidth }]}>
+        <View style={[valueContainerStyle, { width: valueWidth }]}>
           <Text
             style={[
-              styles.valueText,
+              valueTextStyleBase,
               {
                 fontSize,
-                color: disabled ? disabledTextColor : textColor,
+                color: disabled ? finalDisabledTextColor : finalTextColor,
               },
               valueStyle,
             ]}
@@ -147,38 +194,5 @@ const Stepper: React.FC<StepperProps> = ({
     </View>
   );
 };
-
-const styles = StyleSheet.create({
-  container: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  button: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 1,
-    },
-    shadowOpacity: 0.2,
-    shadowRadius: 1,
-    elevation: 2,
-  },
-  buttonText: {
-    fontWeight: 'bold',
-    textAlign: 'center',
-  },
-  valueContainer: {
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginHorizontal: 12,
-  },
-  valueText: {
-    fontWeight: '600',
-    textAlign: 'center',
-  },
-});
 
 export default Stepper;
