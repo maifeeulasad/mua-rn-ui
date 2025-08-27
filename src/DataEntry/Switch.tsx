@@ -8,6 +8,7 @@ import {
   ViewStyle,
   TextStyle,
 } from 'react-native';
+import { useTheme, useColors } from '../themes';
 
 interface SwitchProps {
   value: boolean;
@@ -30,9 +31,9 @@ const Switch: React.FC<SwitchProps> = ({
   onValueChange,
   disabled = false,
   size = 'medium',
-  activeColor = '#007AFF',
-  inactiveColor = '#E5E5EA',
-  thumbColor = '#FFFFFF',
+  activeColor,
+  inactiveColor,
+  thumbColor,
   label,
   labelPosition = 'right',
   style,
@@ -40,6 +41,15 @@ const Switch: React.FC<SwitchProps> = ({
   trackStyle,
   thumbStyle,
 }) => {
+  const theme = useTheme();
+  const colors = useColors();
+
+  // Define theme-aware colors with prop fallbacks
+  const finalActiveColor = activeColor || colors?.primary || '#007AFF';
+  const finalInactiveColor = inactiveColor || colors?.border || '#E5E5EA';
+  const finalThumbColor = thumbColor || colors?.surface || '#FFFFFF';
+  const finalTextColor = colors?.text || '#000';
+
   const animatedValue = useRef(new Animated.Value(value ? 1 : 0)).current;
 
   useEffect(() => {
@@ -72,7 +82,7 @@ const Switch: React.FC<SwitchProps> = ({
 
   const trackColor = animatedValue.interpolate({
     inputRange: [0, 1],
-    outputRange: [inactiveColor, activeColor],
+    outputRange: [finalInactiveColor, finalActiveColor],
   });
 
   const thumbTranslateX = animatedValue.interpolate({
@@ -80,10 +90,51 @@ const Switch: React.FC<SwitchProps> = ({
     outputRange: [2, thumbOffset],
   });
 
+  // Define theme-aware styles
+  const containerStyle: ViewStyle = {
+    justifyContent: 'center',
+  };
+
+  const labelContainerStyle: ViewStyle = {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingVertical: theme?.spacing?.xs || 4,
+  };
+
+  const trackStyleBase: ViewStyle = {
+    justifyContent: 'center',
+    shadowColor: colors?.shadow || '#000',
+    shadowOffset: {
+      width: 0,
+      height: 1,
+    },
+    shadowOpacity: theme?.shadows?.sm?.shadowOpacity || 0.2,
+    shadowRadius: theme?.shadows?.sm?.shadowRadius || 1,
+    elevation: theme?.shadows?.sm?.elevation || 2,
+  };
+
+  const thumbStyleBase: ViewStyle = {
+    position: 'absolute',
+    shadowColor: colors?.shadow || '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: theme?.shadows?.md?.shadowOpacity || 0.25,
+    shadowRadius: theme?.shadows?.md?.shadowRadius || 2,
+    elevation: theme?.shadows?.md?.elevation || 4,
+  };
+
+  const labelTextStyle: TextStyle = {
+    fontSize: theme?.typography?.fontSize?.md || 16,
+    color: finalTextColor,
+    marginHorizontal: theme?.spacing?.sm || 8,
+  };
+
   const renderSwitch = () => (
     <TouchableOpacity
       style={[
-        styles.container,
+        containerStyle,
         { opacity: disabled ? 0.6 : 1 },
         style,
       ]}
@@ -93,7 +144,7 @@ const Switch: React.FC<SwitchProps> = ({
     >
       <Animated.View
         style={[
-          styles.track,
+          trackStyleBase,
           {
             width,
             height,
@@ -105,12 +156,12 @@ const Switch: React.FC<SwitchProps> = ({
       >
         <Animated.View
           style={[
-            styles.thumb,
+            thumbStyleBase,
             {
               width: thumbSize,
               height: thumbSize,
               borderRadius: thumbSize / 2,
-              backgroundColor: thumbColor,
+              backgroundColor: finalThumbColor,
               transform: [{ translateX: thumbTranslateX }],
             },
             thumbStyle,
@@ -125,54 +176,16 @@ const Switch: React.FC<SwitchProps> = ({
   }
 
   return (
-    <View style={styles.labelContainer}>
+    <View style={labelContainerStyle}>
       {labelPosition === 'left' && (
-        <Text style={[styles.label, labelStyle]}>{label}</Text>
+        <Text style={[labelTextStyle, labelStyle]}>{label}</Text>
       )}
       {renderSwitch()}
       {labelPosition === 'right' && (
-        <Text style={[styles.label, labelStyle]}>{label}</Text>
+        <Text style={[labelTextStyle, labelStyle]}>{label}</Text>
       )}
     </View>
   );
 };
-
-const styles = StyleSheet.create({
-  container: {
-    justifyContent: 'center',
-  },
-  labelContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    paddingVertical: 4,
-  },
-  track: {
-    justifyContent: 'center',
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 1,
-    },
-    shadowOpacity: 0.2,
-    shadowRadius: 1,
-    elevation: 2,
-  },
-  thumb: {
-    position: 'absolute',
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.25,
-    shadowRadius: 2,
-    elevation: 4,
-  },
-  label: {
-    fontSize: 16,
-    color: '#000',
-    marginHorizontal: 8,
-  },
-});
 
 export default Switch;
