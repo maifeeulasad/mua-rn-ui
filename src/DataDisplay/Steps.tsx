@@ -3,8 +3,7 @@ import {
   View, 
   Text, 
   ViewStyle, 
-  TextStyle,
-  StyleSheet 
+  TextStyle
 } from 'react-native';
 import { useTheme, useColors } from '../themes';
 
@@ -210,19 +209,29 @@ const Steps: React.FC<StepsProps> = ({
     };
   };
 
+  const getContainerStyle = (direction: string, customStyle?: ViewStyle): ViewStyle[] => {
+    const baseStyle: ViewStyle = {
+      flexDirection: direction === 'vertical' ? 'column' : 'row',
+      alignItems: direction === 'vertical' ? 'stretch' : 'flex-start',
+    };
+    return customStyle ? [baseStyle, customStyle] : [baseStyle];
+  };
+
+  const getStepStyle = (isVertical: boolean): ViewStyle => ({
+    flex: isVertical ? 0 : 1,
+    flexDirection: isVertical ? 'row' : 'column',
+    alignItems: isVertical ? 'flex-start' : 'center',
+    marginBottom: isVertical ? theme.spacing.md : 0,
+  });
+
+  const getStepHeaderStyle = (isVertical: boolean): ViewStyle => ({
+    flexDirection: isVertical ? 'column' : 'row',
+    alignItems: 'center',
+    marginBottom: isVertical ? 0 : theme.spacing.xs,
+  });
+
   const renderStepIcon = (step: StepItem, index: number, stepStatus: string) => {
-    const colors = getStepColors(stepStatus);
-    const iconSize = size === 'small' ? 24 : 32;
-    
-    const iconContainerStyle = [
-      styles.iconContainer,
-      {
-        width: iconSize,
-        height: iconSize,
-        backgroundColor: colors.iconBg,
-        borderRadius: iconSize / 2,
-      },
-    ];
+    const iconContainerStyle = getIconContainerStyle(stepStatus);
 
     if (step.icon) {
       return (
@@ -236,51 +245,28 @@ const Steps: React.FC<StepsProps> = ({
     
     return (
       <View style={iconContainerStyle}>
-        <Text
-          style={[
-            styles.iconText,
-            {
-              color: colors.iconColor,
-              fontSize: size === 'small' ? 12 : 14,
-            },
-          ]}
-        >
+        <Text style={getIconTextStyle(stepStatus)}>
           {iconText}
         </Text>
       </View>
     );
   };
 
-  const renderStepContent = (step: StepItem, index: number, stepStatus: string) => {
-    const colors = getStepColors(stepStatus);
+  const renderStepContent = (step: StepItem, stepStatus: string) => {
     const isVertical = direction === 'vertical';
     const isLabelVertical = labelPlacement === 'vertical';
-    
+
     const contentStyle = [
-      styles.content,
-      isVertical && styles.verticalContent,
-      isLabelVertical && !isVertical && styles.verticalLabelContent,
-    ];
-
-    const stepTitleStyle = [
-      styles.title,
-      size === 'small' && styles.smallTitle,
-      { color: colors.titleColor },
-      titleStyle,
-    ];
-
-    const stepDescriptionStyle = [
-      styles.description,
-      size === 'small' && styles.smallDescription,
-      { color: colors.descriptionColor },
-      descriptionStyle,
+      contentStyleThemed,
+      isVertical && verticalContentStyleThemed,
+      isLabelVertical && !isVertical && verticalLabelContentStyleThemed,
     ];
 
     return (
       <View style={contentStyle}>
-        <Text style={stepTitleStyle}>{step.title}</Text>
+        <Text style={[getTitleStyle(stepStatus), titleStyle]}>{step.title}</Text>
         {step.description && (
-          <Text style={stepDescriptionStyle}>{step.description}</Text>
+          <Text style={[getDescriptionStyle(stepStatus), descriptionStyle]}>{step.description}</Text>
         )}
       </View>
     );
@@ -299,7 +285,7 @@ const Steps: React.FC<StepsProps> = ({
       return (
         <View
           style={[
-            styles.verticalConnector,
+            getVerticalConnectorStyle(stepStatus),
             { backgroundColor: connectorColor },
           ]}
         />
@@ -309,7 +295,7 @@ const Steps: React.FC<StepsProps> = ({
     return (
       <View
         style={[
-          styles.horizontalConnector,
+          getHorizontalConnectorStyle(stepStatus),
           { backgroundColor: connectorColor },
         ]}
       />
@@ -320,114 +306,22 @@ const Steps: React.FC<StepsProps> = ({
     const stepStatus = getStepStatus(index);
     const isVertical = direction === 'vertical';
     
-    const stepContainerStyle = [
-      styles.step,
-      isVertical && styles.verticalStep,
-      !isVertical && styles.horizontalStep,
-    ];
-
     return (
-      <View key={index} style={stepContainerStyle}>
-        <View style={styles.stepHeader}>
+      <View key={index} style={getStepStyle(isVertical)}>
+        <View style={getStepHeaderStyle(isVertical)}>
           {renderStepIcon(step, index, stepStatus)}
           {renderConnector(index, stepStatus)}
         </View>
-        {renderStepContent(step, index, stepStatus)}
+        {renderStepContent(step, stepStatus)}
       </View>
     );
   };
 
-  const containerStyle = [
-    styles.container,
-    direction === 'vertical' && styles.verticalContainer,
-    style,
-  ];
-
   return (
-    <View style={containerStyle} testID={testID}>
+    <View style={getContainerStyle(direction, style)} testID={testID}>
       {steps.map((step, index) => renderStep(step, index))}
     </View>
   );
 };
-
-const styles = StyleSheet.create({
-  container: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-  },
-  verticalContainer: {
-    flexDirection: 'column',
-  },
-  step: {
-    flex: 1,
-  },
-  horizontalStep: {
-    alignItems: 'center',
-  },
-  verticalStep: {
-    flexDirection: 'row',
-    marginBottom: 16,
-  },
-  stepHeader: {
-    position: 'relative',
-    alignItems: 'center',
-  },
-  iconContainer: {
-    justifyContent: 'center',
-    alignItems: 'center',
-    borderWidth: 1,
-    borderColor: 'transparent',
-  },
-  iconText: {
-    fontWeight: 'bold',
-    textAlign: 'center',
-  },
-  content: {
-    marginTop: 8,
-    alignItems: 'center',
-  },
-  verticalContent: {
-    marginTop: 0,
-    marginLeft: 12,
-    alignItems: 'flex-start',
-    flex: 1,
-  },
-  verticalLabelContent: {
-    alignItems: 'center',
-  },
-  title: {
-    fontSize: 14,
-    fontWeight: '600',
-    textAlign: 'center',
-  },
-  smallTitle: {
-    fontSize: 12,
-  },
-  description: {
-    fontSize: 12,
-    marginTop: 4,
-    textAlign: 'center',
-  },
-  smallDescription: {
-    fontSize: 11,
-  },
-  horizontalConnector: {
-    position: 'absolute',
-    top: '50%',
-    left: '100%',
-    right: '-100%',
-    height: 1,
-    zIndex: -1,
-  },
-  verticalConnector: {
-    position: 'absolute',
-    top: '100%',
-    left: '50%',
-    width: 1,
-    height: 16,
-    zIndex: -1,
-    marginLeft: -0.5,
-  },
-});
 
 export default Steps;
