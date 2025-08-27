@@ -18,3 +18,4 @@ export { default as ImagePicker } from './src/DataEntry/ImagePicker';
 export { default as Picker } from './src/DataEntry/Picker';
 export { default as Radio, RadioGroup, RadioItem } from './src/DataEntry/Radio';
 export { default as Stepper } from './src/DataEntry/Stepper';
+export { default as Slider } from './src/DataEntry/Slider';
