@@ -10,6 +10,7 @@ import {
   TextInputProps,
 } from 'react-native';
 import { useForm } from './Form';
+import { useTheme, useIsThemeProvided } from '../themes';
 
 interface InputProps extends Omit<TextInputProps, 'style'> {
   name?: string;
@@ -57,6 +58,8 @@ const Input: React.FC<InputProps> = ({
   showCharCount = false,
   ...textInputProps
 }) => {
+  const { colors, components, spacing, borderRadius } = useTheme();
+  const isThemeProvided = useIsThemeProvided();
   const form = name ? useForm() : null;
   const [internalValue, setInternalValue] = useState(propValue || '');
   const [isFocused, setIsFocused] = useState(false);
@@ -93,10 +96,94 @@ const Input: React.FC<InputProps> = ({
   };
 
   const getBorderColor = () => {
-    if (error) return '#FF3B30';
-    if (isFocused) return '#007AFF';
-    return '#D1D1D6';
+    if (!isThemeProvided) {
+      // Fallback colors
+      if (error) return '#FF3B30';
+      if (isFocused) return '#007AFF';
+      return '#D1D1D6';
+    }
+    
+    // Theme-aware colors
+    if (error) return colors.error;
+    if (isFocused) return colors.primary;
+    return colors.inputBorder;
   };
+
+  const getInputStyles = () => {
+    if (!isThemeProvided) {
+      return {
+        container: { marginBottom: 16 },
+        label: { fontSize: 14, fontWeight: '500' as const, marginBottom: 8, color: '#333' },
+        required: { color: '#FF3B30' },
+        inputContainer: {
+          flexDirection: 'row' as const,
+          alignItems: 'center' as const,
+          borderWidth: 1,
+          borderRadius: 8,
+          paddingHorizontal: 12,
+          backgroundColor: '#fff',
+          minHeight: 48,
+        },
+        input: { flex: 1, fontSize: 16, color: '#333', paddingVertical: 12 },
+        multilineInput: { paddingTop: 12, textAlignVertical: 'top' as const },
+        leftIcon: { marginRight: 8 },
+        rightIcon: { marginLeft: 8, padding: 4 },
+        footer: { flexDirection: 'row' as const, justifyContent: 'space-between' as const, alignItems: 'center' as const },
+        error: { fontSize: 12, color: '#FF3B30', marginTop: 4 },
+        charCount: { fontSize: 12, color: '#999', marginTop: 4, textAlign: 'right' as const },
+      };
+    }
+
+    return {
+      container: { marginBottom: spacing.md },
+      label: { 
+        fontSize: 14, 
+        fontWeight: '500' as const, 
+        marginBottom: spacing.xs, 
+        color: colors.text 
+      },
+      required: { color: colors.error },
+      inputContainer: {
+        flexDirection: 'row' as const,
+        alignItems: 'center' as const,
+        borderWidth: components.input.borderWidth,
+        borderRadius: components.input.borderRadius,
+        paddingHorizontal: components.input.paddingHorizontal,
+        backgroundColor: colors.inputBackground,
+        minHeight: components.input.minHeight,
+      },
+      input: { 
+        flex: 1, 
+        fontSize: components.input.fontSize, 
+        color: colors.text, 
+        paddingVertical: components.input.paddingVertical 
+      },
+      multilineInput: { 
+        paddingTop: components.input.paddingVertical, 
+        textAlignVertical: 'top' as const 
+      },
+      leftIcon: { marginRight: spacing.xs },
+      rightIcon: { marginLeft: spacing.xs, padding: spacing.xs },
+      footer: { 
+        flexDirection: 'row' as const, 
+        justifyContent: 'space-between' as const, 
+        alignItems: 'center' as const 
+      },
+      error: { 
+        fontSize: 12, 
+        color: colors.error, 
+        marginTop: spacing.xs 
+      },
+      charCount: { 
+        fontSize: 12, 
+        color: colors.textSecondary, 
+        marginTop: spacing.xs, 
+        textAlign: 'right' as const 
+      },
+    };
+  };
+
+  const styles = getInputStyles();
 
   return (
     <View style={[styles.container, containerStyle]}>
@@ -135,7 +222,7 @@ const Input: React.FC<InputProps> = ({
           onFocus={handleFocus}
           onBlur={handleBlur}
           placeholder={placeholder}
-          placeholderTextColor="#999"
+          placeholderTextColor={isThemeProvided ? colors.inputPlaceholder : "#999"}
           editable={!disabled}
           multiline={multiline}
           numberOfLines={numberOfLines}
@@ -170,63 +257,5 @@ const Input: React.FC<InputProps> = ({
     </View>
   );
 };
-
-const styles = StyleSheet.create({
-  container: {
-    marginBottom: 16,
-  },
-  label: {
-    fontSize: 14,
-    fontWeight: '500',
-    color: '#333',
-    marginBottom: 6,
-  },
-  required: {
-    color: '#FF3B30',
-  },
-  inputContainer: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    borderWidth: 1,
-    borderRadius: 8,
-    backgroundColor: '#fff',
-    paddingHorizontal: 12,
-    minHeight: 48,
-  },
-  input: {
-    flex: 1,
-    fontSize: 16,
-    color: '#000',
-    paddingVertical: 12,
-  },
-  multilineInput: {
-    textAlignVertical: 'top',
-    paddingTop: 12,
-    paddingBottom: 12,
-  },
-  leftIcon: {
-    marginRight: 8,
-  },
-  rightIcon: {
-    marginLeft: 8,
-    padding: 4,
-  },
-  footer: {
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginTop: 4,
-    minHeight: 20,
-  },
-  error: {
-    fontSize: 12,
-    color: '#FF3B30',
-    flex: 1,
-  },
-  charCount: {
-    fontSize: 12,
-    color: '#666',
-  },
-});
 
 export default Input;
