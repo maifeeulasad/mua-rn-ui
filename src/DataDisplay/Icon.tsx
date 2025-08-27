@@ -7,6 +7,7 @@ import {
   TouchableOpacity,
   StyleSheet 
 } from 'react-native';
+import { useTheme, useColors } from '../themes';
 
 export interface IconProps {
   name: string;
@@ -80,7 +81,7 @@ const iconMappings = {
 const Icon: React.FC<IconProps> = ({
   name,
   size = 24,
-  color = '#333333',
+  color,
   style,
   textStyle,
   onPress,
@@ -88,6 +89,11 @@ const Icon: React.FC<IconProps> = ({
   testID,
   family = 'material',
 }) => {
+  const theme = useTheme();
+  const colors = useColors();
+
+  // Use theme color if no color is provided
+  const iconColor = color || colors.text;
   const getIconContent = () => {
     const familyIcons = iconMappings[family as keyof typeof iconMappings] || iconMappings.material;
     const iconChar = familyIcons[name as keyof typeof familyIcons];
@@ -100,22 +106,42 @@ const Icon: React.FC<IconProps> = ({
     return name.charAt(0).toUpperCase();
   };
 
+  // Theme-aware styles
+  const containerStyleThemed: ViewStyle = {
+    justifyContent: 'center',
+    alignItems: 'center',
+  };
+
+  const touchableStyleThemed: ViewStyle = {
+    borderRadius: theme.borderRadius.sm,
+  };
+
+  const iconStyleThemed: TextStyle = {
+    textAlign: 'center',
+    includeFontPadding: false,
+    textAlignVertical: 'center',
+  };
+
+  const disabledStyleThemed: ViewStyle = {
+    opacity: 0.5,
+  };
+
   const iconStyles: TextStyle[] = [
-    styles.icon,
+    iconStyleThemed,
     {
       fontSize: size,
-      color: color,
+      color: iconColor,
     },
     ...(textStyle ? [textStyle] : []),
   ];
 
   const containerStyles: ViewStyle[] = [
-    styles.container,
+    containerStyleThemed,
     {
-      width: size + 8,
-      height: size + 8,
+      width: size + theme.spacing.xs,
+      height: size + theme.spacing.xs,
     },
-    ...(disabled ? [styles.disabled] : []),
+    ...(disabled ? [disabledStyleThemed] : []),
     ...(style ? [style] : []),
   ];
 
@@ -133,7 +159,7 @@ const Icon: React.FC<IconProps> = ({
         onPress={onPress}
         activeOpacity={0.7}
         disabled={disabled}
-        style={styles.touchable}
+        style={touchableStyleThemed}
       >
         {renderIcon()}
       </TouchableOpacity>
@@ -183,23 +209,5 @@ export const CheckIcon: React.FC<Omit<IconProps, 'name'>> = (props) => (
 export const ArrowBackIcon: React.FC<Omit<IconProps, 'name'>> = (props) => (
   <Icon {...props} name="arrow_back" />
 );
-
-const styles = StyleSheet.create({
-  container: {
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  touchable: {
-    borderRadius: 4,
-  },
-  icon: {
-    textAlign: 'center',
-    includeFontPadding: false,
-    textAlignVertical: 'center',
-  },
-  disabled: {
-    opacity: 0.5,
-  },
-});
 
 export default Icon;
