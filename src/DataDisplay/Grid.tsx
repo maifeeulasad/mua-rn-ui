@@ -7,6 +7,7 @@ import {
   TextStyle,
   StyleSheet 
 } from 'react-native';
+import { useTheme, useColors } from '../themes';
 
 export interface GridItemProps {
   text?: string;
@@ -41,19 +42,52 @@ const GridItem: React.FC<GridItemProps & { itemStyle?: ViewStyle; itemHeight?: n
   itemStyle,
   itemHeight,
 }) => {
+  const theme = useTheme();
+  const colors = useColors();
+
+  // Theme-aware styles
+  const gridItemStyleThemed: ViewStyle = {
+    justifyContent: 'center',
+    alignItems: 'center',
+    paddingVertical: theme.spacing.md,
+    paddingHorizontal: theme.spacing.xs,
+    backgroundColor: colors.background,
+  };
+
+  const disabledItemStyleThemed: ViewStyle = {
+    opacity: 0.5,
+  };
+
+  const iconContainerStyleThemed: ViewStyle = {
+    marginBottom: theme.spacing.xs,
+    alignItems: 'center',
+    justifyContent: 'center',
+  };
+
+  const itemTextStyleThemed: TextStyle = {
+    fontSize: theme.typography.fontSize.xs,
+    color: colors.text,
+    textAlign: 'center',
+    lineHeight: theme.typography.lineHeight.xs,
+  };
+
+  const touchableItemStyleThemed: ViewStyle = {
+    flex: 1,
+  };
+
   const itemStyles: ViewStyle[] = [
-    styles.gridItem,
+    gridItemStyleThemed,
     ...(itemStyle ? [itemStyle] : []),
     ...(itemHeight ? [{ height: itemHeight }] : []),
-    ...(disabled ? [styles.disabledItem] : []),
+    ...(disabled ? [disabledItemStyleThemed] : []),
     ...(style ? [style] : []),
   ];
 
   const content = (
     <View style={itemStyles} testID={testID}>
-      {icon && <View style={styles.iconContainer}>{icon}</View>}
+      {icon && <View style={iconContainerStyleThemed}>{icon}</View>}
       {text && (
-        <Text style={[styles.itemText, textStyle]} numberOfLines={2}>
+        <Text style={[itemTextStyleThemed, textStyle]} numberOfLines={2}>
           {text}
         </Text>
       )}
@@ -66,7 +100,7 @@ const GridItem: React.FC<GridItemProps & { itemStyle?: ViewStyle; itemHeight?: n
         onPress={onPress}
         activeOpacity={0.7}
         disabled={disabled}
-        style={styles.touchableItem}
+        style={touchableItemStyleThemed}
       >
         {content}
       </TouchableOpacity>
@@ -87,6 +121,17 @@ const Grid: React.FC<GridProps> = ({
   renderItem,
   testID,
 }) => {
+  const theme = useTheme();
+  const colors = useColors();
+
+  // Theme-aware styles
+  const containerStyleThemed: ViewStyle = {
+    backgroundColor: colors.background,
+  };
+
+  const rowStyleThemed: ViewStyle = {
+    flexDirection: 'row',
+  };
   const renderGridItem = (item: GridItemProps, index: number) => {
     if (renderItem) {
       return renderItem(item, index);
@@ -112,7 +157,7 @@ const Grid: React.FC<GridProps> = ({
       marginRight: isLastColumn ? 0 : gap,
       borderRightWidth: hasLine && !isLastColumn ? StyleSheet.hairlineWidth : 0,
       borderBottomWidth: hasLine && !isLastRow ? StyleSheet.hairlineWidth : 0,
-      borderColor: '#e8e8e8',
+      borderColor: colors.divider,
       marginLeft: isFirstColumn ? 0 : 0,
     };
   };
@@ -124,7 +169,7 @@ const Grid: React.FC<GridProps> = ({
       const rowItems = data.slice(i, i + columns);
       
       rows.push(
-        <View key={i} style={styles.row}>
+        <View key={i} style={rowStyleThemed}>
           {rowItems.map((item, itemIndex) => {
             const globalIndex = i + itemIndex;
             return (
@@ -149,43 +194,10 @@ const Grid: React.FC<GridProps> = ({
   };
 
   return (
-    <View style={[styles.container, style]} testID={testID}>
+    <View style={[containerStyleThemed, style]} testID={testID}>
       {renderRows()}
     </View>
   );
 };
-
-const styles = StyleSheet.create({
-  container: {
-    backgroundColor: '#ffffff',
-  },
-  row: {
-    flexDirection: 'row',
-  },
-  touchableItem: {
-    flex: 1,
-  },
-  gridItem: {
-    justifyContent: 'center',
-    alignItems: 'center',
-    paddingVertical: 16,
-    paddingHorizontal: 8,
-    backgroundColor: '#ffffff',
-  },
-  disabledItem: {
-    opacity: 0.5,
-  },
-  iconContainer: {
-    marginBottom: 8,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  itemText: {
-    fontSize: 12,
-    color: '#333333',
-    textAlign: 'center',
-    lineHeight: 16,
-  },
-});
 
 export default Grid;
