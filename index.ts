@@ -10,3 +10,4 @@ export { default as TabBar } from './src/Navigation/TabBar';
 export { default as Tabs } from './src/Navigation/Tabs';
 export { default as Checkbox } from './src/DataEntry/Checkbox';
 export { default as DatePickerView } from './src/DataEntry/DatePickerView';
+export { default as DatePicker } from './src/DataEntry/DatePicker';
