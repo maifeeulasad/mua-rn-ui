@@ -14,3 +14,4 @@ export { default as Form, useForm } from './src/DataEntry/Form';
 export { default as Input } from './src/DataEntry/Input';
 export { default as Switch } from './src/DataEntry/Switch';
 export { default as Button } from './src/DataEntry/Button';
+export { default as ImagePicker } from './src/DataEntry/ImagePicker';
