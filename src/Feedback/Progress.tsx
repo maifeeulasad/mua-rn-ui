@@ -5,8 +5,8 @@ import {
   Animated,
   ViewStyle, 
   TextStyle,
-  StyleSheet 
 } from 'react-native';
+import { useTheme, useColors } from '../themes';
 
 export interface ProgressProps {
   percent?: number;
@@ -41,12 +41,15 @@ const Progress: React.FC<ProgressProps> = ({
   format,
   status = 'normal',
   strokeWidth = 8,
-  trailColor = '#f3f3f3',
+  trailColor,
   strokeColor,
   type = 'line',
   size = 'normal',
   testID,
 }) => {
+  const theme = useTheme();
+  const colors = useColors();
+  
   const animatedProgress = useRef(new Animated.Value(0)).current;
   const animatedOpacity = useRef(new Animated.Value(appearTransition ? 0 : 1)).current;
 
@@ -71,15 +74,16 @@ const Progress: React.FC<ProgressProps> = ({
   const getStatusColor = () => {
     if (strokeColor) return strokeColor;
     
+    // Use theme colors with fallbacks
     switch (status) {
       case 'success':
-        return '#52c41a';
+        return colors?.success || '#52c41a';
       case 'exception':
-        return '#ff4d4f';
+        return colors?.error || '#ff4d4f';
       case 'active':
-        return '#1890ff';
+        return colors?.primary || '#1890ff';
       default:
-        return '#1890ff';
+        return colors?.primary || '#1890ff';
     }
   };
 
@@ -101,28 +105,105 @@ const Progress: React.FC<ProgressProps> = ({
     return `${Math.round(value)}%`;
   };
 
+  // Define styles using theme values
+  const finalTrailColor = trailColor || colors?.border || '#f3f3f3';
+
+  const lineContainerStyle: ViewStyle = {
+    width: '100%',
+  };
+
+  const fixedPositionStyle: ViewStyle = {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    zIndex: 1000,
+  };
+
+  const progressWrapperStyle: ViewStyle = {
+    flexDirection: 'row',
+    alignItems: 'center',
+  };
+
+  const trackStyle: ViewStyle = {
+    flex: 1,
+    borderRadius: theme?.borderRadius?.sm || 4,
+    overflow: 'hidden',
+  };
+
+  const themeAwareFillStyle: ViewStyle = {
+    borderRadius: theme?.borderRadius?.sm || 4,
+  };
+
+  const infoContainerStyle: ViewStyle = {
+    marginLeft: theme?.spacing?.sm || 8,
+    minWidth: 40,
+    alignItems: 'center',
+  };
+
+  const infoTextStyle: TextStyle = {
+    fontSize: theme?.typography?.fontSize?.xs || 12,
+    color: colors?.textSecondary || '#666666',
+    fontWeight: theme?.typography?.fontWeight?.medium || '500',
+  };
+
+  const circleContainerStyle: ViewStyle = {
+    alignItems: 'center',
+    justifyContent: 'center',
+  };
+
+  const circleWrapperStyle: ViewStyle = {
+    position: 'relative',
+    alignItems: 'center',
+    justifyContent: 'center',
+  };
+
+  const circleTrackStyle: ViewStyle = {
+    position: 'absolute',
+  };
+
+  const circleProgressStyle: ViewStyle = {
+    position: 'absolute',
+    borderTopColor: 'transparent',
+    borderRightColor: 'transparent',
+    borderBottomColor: 'transparent',
+  };
+
+  const circleInfoStyle: ViewStyle = {
+    position: 'absolute',
+    alignItems: 'center',
+    justifyContent: 'center',
+  };
+
+  const circleInfoTextStyle: TextStyle = {
+    fontSize: theme?.typography?.fontSize?.sm || 14,
+    color: colors?.text || '#333333',
+    fontWeight: theme?.typography?.fontWeight?.medium || '500',
+    textAlign: 'center',
+  };
+
   const renderLineProgress = () => {
     const progressHeight = size === 'small' ? 6 : strokeWidth;
     const statusColor = getStatusColor();
     
     const containerStyles: ViewStyle[] = [
-      styles.lineContainer,
-      ...(position === 'fixed' ? [styles.fixedPosition] : []),
+      lineContainerStyle,
+      ...(position === 'fixed' ? [fixedPositionStyle] : []),
       { height: progressHeight },
       ...(style ? [style] : []),
     ];
 
     const trackStyles: ViewStyle[] = [
-      styles.track,
+      trackStyle,
       {
         height: progressHeight,
-        backgroundColor: unfilled ? 'transparent' : trailColor,
+        backgroundColor: unfilled ? 'transparent' : finalTrailColor,
       },
       ...(barStyle ? [barStyle] : []),
     ];
 
     const fillStyles: ViewStyle[] = [
-      styles.fill,
+      themeAwareFillStyle,
       {
         height: progressHeight,
         backgroundColor: statusColor,
@@ -132,7 +213,7 @@ const Progress: React.FC<ProgressProps> = ({
 
     return (
       <Animated.View style={[containerStyles, { opacity: animatedOpacity }]}>
-        <View style={styles.progressWrapper}>
+        <View style={progressWrapperStyle}>
           <View style={trackStyles}>
             <Animated.View
               style={[
@@ -149,8 +230,8 @@ const Progress: React.FC<ProgressProps> = ({
           </View>
           
           {showInfo && (
-            <View style={styles.infoContainer}>
-              <Text style={[styles.infoText, textStyle]}>
+            <View style={infoContainerStyle}>
+              <Text style={[infoTextStyle, textStyle]}>
                 {getStatusIcon() || formatPercent(safePercent)}
               </Text>
             </View>
@@ -168,7 +249,7 @@ const Progress: React.FC<ProgressProps> = ({
     const statusColor = getStatusColor();
 
     const containerStyles: ViewStyle[] = [
-      styles.circleContainer,
+      circleContainerStyle,
       {
         width: radius * 2,
         height: radius * 2,
@@ -178,17 +259,17 @@ const Progress: React.FC<ProgressProps> = ({
 
     return (
       <Animated.View style={[containerStyles, { opacity: animatedOpacity }]}>
-        <View style={styles.circleWrapper}>
+        <View style={circleWrapperStyle}>
           {/* Background circle */}
           <View
             style={[
-              styles.circleTrack,
+              circleTrackStyle,
               {
                 width: radius * 2,
                 height: radius * 2,
                 borderRadius: radius,
                 borderWidth: strokeWidthValue,
-                borderColor: unfilled ? 'transparent' : trailColor,
+                borderColor: unfilled ? 'transparent' : finalTrailColor,
               },
             ]}
           />
@@ -196,7 +277,7 @@ const Progress: React.FC<ProgressProps> = ({
           {/* Progress circle */}
           <Animated.View
             style={[
-              styles.circleProgress,
+              circleProgressStyle,
               {
                 width: radius * 2,
                 height: radius * 2,
@@ -218,8 +299,8 @@ const Progress: React.FC<ProgressProps> = ({
           />
           
           {showInfo && (
-            <View style={styles.circleInfo}>
-              <Text style={[styles.circleInfoText, textStyle]}>
+            <View style={circleInfoStyle}>
+              <Text style={[circleInfoTextStyle, textStyle]}>
                 {getStatusIcon() || formatPercent(safePercent)}
               </Text>
             </View>
@@ -235,70 +316,5 @@ const Progress: React.FC<ProgressProps> = ({
     </View>
   );
 };
-
-const styles = StyleSheet.create({
-  lineContainer: {
-    width: '100%',
-  },
-  fixedPosition: {
-    position: 'absolute',
-    top: 0,
-    left: 0,
-    right: 0,
-    zIndex: 1000,
-  },
-  progressWrapper: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  track: {
-    flex: 1,
-    borderRadius: 4,
-    overflow: 'hidden',
-  },
-  fill: {
-    borderRadius: 4,
-    transition: 'width 0.3s ease',
-  },
-  infoContainer: {
-    marginLeft: 8,
-    minWidth: 40,
-    alignItems: 'center',
-  },
-  infoText: {
-    fontSize: 12,
-    color: '#666666',
-    fontWeight: '500',
-  },
-  circleContainer: {
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  circleWrapper: {
-    position: 'relative',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  circleTrack: {
-    position: 'absolute',
-  },
-  circleProgress: {
-    position: 'absolute',
-    borderTopColor: 'transparent',
-    borderRightColor: 'transparent',
-    borderBottomColor: 'transparent',
-  },
-  circleInfo: {
-    position: 'absolute',
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  circleInfoText: {
-    fontSize: 14,
-    color: '#333333',
-    fontWeight: '500',
-    textAlign: 'center',
-  },
-});
 
 export default Progress;
