@@ -5,3 +5,4 @@ export { default as WingBlank } from './src/Layout/WingBlank';
 export { default as WhiteSpace } from './src/Layout/WhiteSpace';
 export { default as Drawer } from './src/Navigation/Drawer';
 export { default as Tooltip } from './src/Navigation/Tooltip';
+export { default as Pagination } from './src/Navigation/Pagination';
