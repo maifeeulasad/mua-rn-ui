@@ -8,3 +8,4 @@ export { default as Tooltip } from './src/Navigation/Tooltip';
 export { default as Pagination } from './src/Navigation/Pagination';
 export { default as TabBar } from './src/Navigation/TabBar';
 export { default as Tabs } from './src/Navigation/Tabs';
+export { default as Checkbox } from './src/DataEntry/Checkbox';
