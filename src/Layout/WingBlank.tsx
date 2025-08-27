@@ -1,5 +1,6 @@
 import React from 'react';
 import { View, ViewProps, ViewStyle } from 'react-native';
+import { useTheme } from '../themes';
 
 type WingBlankSize = 'sm' | 'md' | 'lg' | number;
 
@@ -14,20 +15,25 @@ const WingBlank: React.FC<WingBlankProps> = ({
   children,
   ...props
 }) => {
+  const theme = useTheme();
+
   const getSizeValue = (size: WingBlankSize): number => {
     if (typeof size === 'number') {
       return size;
     }
     
+    // Use theme spacing if available, fallback to hardcoded values
+    const spacing = theme?.spacing;
+    
     switch (size) {
       case 'sm':
-        return 8;
+        return spacing?.sm || 8;
       case 'md':
-        return 16;
+        return spacing?.md || 16;
       case 'lg':
-        return 24;
+        return spacing?.lg || 24;
       default:
-        return 24;
+        return spacing?.lg || 24;
     }
   };
 
