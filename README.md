@@ -319,6 +319,37 @@ const AppNavigation = () => {
 | **Android** | ✅ Full | Android 6+ (API 23+) |
 | **Web** | ⚠️ Partial | Basic components only |
 
+## 🛠️ CI Build with pnpm
+
+Use GitHub Actions to verify apps that depend on this library build on both the latest Node.js release and an LTS version while keeping pnpm in sync:
+
+```yaml
+name: Build with pnpm
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: [18.x, 22.x]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: pnpm
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
+          run_install: false
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm build
+```
+
 ## 🤝 Contributing
 
 1. Fork the repository
