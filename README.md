@@ -338,14 +338,14 @@ jobs:
         node-version: [18.x, 22.x]
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: ${{ matrix.node-version }}
-          cache: pnpm
       - uses: pnpm/action-setup@v4
         with:
           version: 10
           run_install: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: pnpm
       - run: pnpm install --frozen-lockfile
       - run: pnpm build
 ```
